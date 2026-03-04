@@ -1,81 +1,130 @@
-# Academic Nautical Exam Simulator (JavaFX)
+# Academic Nautical Exam Simulator
 
-**Proyecto de práctica y simulación de ejercicios de carta náutica desarrollado en Java + JavaFX con herramientas interactivas y módulo de evaluación.**
+A desktop application for practising coastal navigation exercises in academic settings. Students load nautical chart problems, use on-screen tools to work through them, submit their answers, and receive immediate feedback. Session statistics are persisted across launches via an embedded SQLite database.
 
-## Descripción
+---
 
-Este proyecto permite trabajar sobre una carta náutica digital simulando la experiencia de un cuaderno de ejercicios real. La aplicación ofrece una suite de herramientas de dibujo (puntos, líneas, arcos, texto) e instrumental de navegación (transportador y regla rotatoria) para resolver problemas de navegación costera.
+![Java 17+](https://img.shields.io/badge/Java-v17+-007396?style=for-the-badge&logo=java&logoColor=white)
+![JavaFX 24](https://img.shields.io/badge/JavaFX-v24-FF0000?style=for-the-badge&logo=oracle&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-Persistence-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
+![Antigravity](https://img.shields.io/badge/Workflow-Antigravity-ff69b4?style=for-the-badge&logo=python&logoColor=white)
+![MVC Architecture](https://img.shields.io/badge/Pattern-MVC-green?style=for-the-badge)
 
-El desarrollo fue realizado en equipo junto a dos compañeros (**Unai Soler** y **Jordi Encabo**). El trabajo fue colaborativo, abarcando desde el diseño de vistas en Scene Builder hasta la lógica de los controladores y la persistencia de datos. El objetivo principal fue construir una experiencia de práctica fluida utilizando la arquitectura **JavaFX (FXML + Controladores)** y gestionar usuarios y sesiones mediante **SQLite**.
+## Overview
 
-Se implementó una interfaz para la resolución de problemas tipo test (enunciado + 4 opciones), validación de soluciones y almacenamiento de estadísticas de aciertos y fallos. Durante el desarrollo se utilizó soporte puntual de inteligencia artificial (Copilot) para sugerencias de sintaxis, pero la arquitectura, la lógica de negocio y la depuración fueron realizadas manualmente.
+The simulator recreates the workflow of a real coastal navigation exam. A student selects a problem — either manually from a numbered list or at random — reads the scenario in a dedicated text panel, and uses the interactive chart canvas to reason through it. When ready, they select one of four multiple-choice answers and submit. The application records each hit and fault, aggregating them into a per-user statistics view that spans all sessions.
 
-## Objetivos
+The chart canvas supports the full set of analogue tools a navigator would use on paper:
 
-* **Simulación de Carta:** Practicar conceptos básicos de navegación utilizando herramientas visuales precisas sobre un lienzo digital.
-* **Módulo de Evaluación:** Resolver problemas tipo test y registrar automáticamente los aciertos y fallos por sesión.
-* **Gestión de Usuarios:** Permitir la creación, autenticación y edición de perfiles (avatar, credenciales, datos personales).
-* **Experiencia de Usuario (UX):** Mantener una interfaz intuitiva con funcionalidades de zoom, arrastre (*pan*), rotación de instrumentos y limpieza rápida del área de trabajo.
+- protractor overlay for bearing measurement
+- ruler with free rotation for distance estimation
+- compass tool for point-to-point pixel distances
+- freehand line and arc drawing (fixed or free radius)
+- point markers in four styles (circle, cross, asterisk, star)
+- text annotation at any position
+- lat/lon crosshair lines for coordinate reference
+- colour editing and element removal
 
-## Funcionalidades Principales
+All drawing is non-destructive within a session. The chart pane is zoomable and pannable via a slider and scroll bars.
 
-* **Dibujo Técnico:** Trazado de puntos (círculo, cruz, asterisco), líneas con grosor ajustable y arcos (radio fijo o libre) con previsualización en tiempo real.
-* **Edición:** Herramientas de selección, cambio de color, borrado individual y limpieza total del lienzo.
-* **Instrumental:**
-    * **Transportador:** Arrastrable con overlay transparente.
-    * **Regla:** Ventana auxiliar con controles de rotación y arrastre.
-    * **Coordenadas:** Marcador visual de Latitud/Longitud.
-* **Sistema de Problemas:** Selección aleatoria o manual de ejercicios, validación inmediata y *feedback* visual.
-* **Estadísticas:** Panel de consulta de resultados acumulados por usuario.
+---
 
-## Datos y Recursos
+## Architecture
 
-* **Base de Datos:** SQLite (`data.db` en la raíz). Gestiona las entidades: `User`, `Problem`, `Answer`, `Session`.
-* **Recursos:** Iconos, imágenes de instrumental (regla, transportador) y hojas de estilo CSS ubicados en `resources/`.
-* **Vistas:** Archivos FXML diseñados con Scene Builder ubicados en `vista/`.
+The project follows a layered MVC structure.
 
-> **Nota:** Si no se incluye la base de datos real en el repositorio, se proporciona un `data.example.db`. Renómbralo a `data.db` para iniciar la aplicación.
+The view layer consists of FXML files designed in Scene Builder, located in `src/vista/`. Each screen has a dedicated controller in `src/javafxmlapplication/`.
 
-## Metodología
+The model layer is packaged as an external JAR (`lib/IPC2025.jar`) and exposes the domain entities — `User`, `Problem`, `Answer`, `Session` — along with a `Navigation` facade that coordinates all database operations. Persistence uses the JDBC SQLite driver (`lib/sqlite-jdbc`) writing to `data.db` in the working directory.
 
-### 1. Arquitectura JavaFX
-Implementación del patrón MVC mediante FXML para la vista y Clases Java para el control (`Controllers`). Separación lógica entre la interfaz gráfica y el modelo de datos.
+The `poiupv` package contains the application entry point (`PoiUPVApp`) and the `Poi` value class used to manage points of interest on the chart canvas.
 
-### 2. Gestión del Lienzo (Canvas)
-Uso de un `ScrollPane` conteniendo un `Group` para permitir un zoom continuo y navegación fluida sobre la imagen de la carta náutica de alta resolución.
+```
+src/
+├── javafxmlapplication/   # JavaFX controllers (one per FXML screen)
+├── poiupv/                # Entry point + POI model
+└── vista/                 # FXML layouts + CSS
+lib/
+└── lib/
+    ├── IPC2025.jar        # Domain model and Navigation facade
+    └── sqlite-jdbc-*.jar  # SQLite JDBC driver
+data.db                    # Persistent user and session data
+```
 
-### 3. Lógica de Herramientas
-Gestión de estados mediante un `enum` para controlar el comportamiento del ratón (primer clic, arrastre, segundo clic) y las previsualizaciones de trazo.
+---
 
-### 4. Validación con Usuarios
-Se realizaron pruebas informales de usabilidad con un grupo de control de aprox. **50 personas** (entorno local). El feedback permitió refinar la UX:
-* Mejora en la previsualización de líneas y arcos.
-* Tooltips más descriptivos en los botones.
-* Ajuste de la ventana de rotación de la regla a modo *"Always on Top"*.
+## Screens
 
-## Estructura del repositorio
+| Screen | Controller | Purpose |
+|---|---|---|
+| Authentication | `FXMLAutenticarseController` | Login with nickname and password |
+| Registration | `FXMLRegistrarseController` | Create account with avatar and birthdate |
+| Work canvas | `FXMLTrabajoController` | Main drawing and exam workspace |
+| Problem picker | `ElegirProblemaController` | Select or randomise a problem |
+| Profile editor | `PerfilPanelController` | Update password, email, avatar |
+| Statistics | `EstadisticasController` | Aggregated hit/fault summary |
+| Ruler rotation | `RotarReglaController` | Floating slider to rotate the ruler overlay |
+| Close session | `CerrarSesionController` | Persist session stats and exit |
+| Close app | `CerrarAplicacionController` | Confirm application exit |
 
-```text
-POI_UPV/
-├── src/
-│   ├── javafxmlapplication/       # Controladores de la UI
-│   │   ├── FXMLTrabajoController.java
-│   │   ├── FXMLAutenticarseController.java
-│   │   ├── EstadisticasController.java
-│   │   └── ...
-│   └── poiupv/                    # Main y lógica de arranque
-│       ├── PoiUPVApp.java
-│       ├── Poi.java
-│       └── ...
-├── vista/                         # Archivos FXML (Scene Builder)
-│   ├── FXMLTrabajo.fxml
-│   ├── VentanaRegistro.fxml
-│   └── ...
-├── resources/                     # Assets gráficos y CSS
-│   ├── regla123.png
-│   ├── transportador.png
-│   ├── estiloTrabajo.css
-│   └── ...
-├── lib/lib/                       # Librerías (sqlite-jdbc)
-├── data.db                        # Base de datos SQLite
-└── README.md                      # Documentación
+---
+
+## Getting Started
+
+### Prerequisites
+
+- JDK 17 or later
+- NetBeans IDE (Ant-based build) — or any IDE that supports Ant projects
+- JavaFX SDK 24 on the module path
+
+### Running
+
+Open the project in NetBeans and select Run → Run Project (F6). The Ant build script handles classpath resolution for the bundled JARs automatically.
+
+Alternatively, from the project root:
+
+```bash
+ant clean jar
+java -jar dist/PoiUPVApp.jar
+```
+
+### First launch
+
+On first launch, create an account via the registration screen. Choose any avatar image (PNG or JPG) or use the default one. Once logged in, the work canvas opens with all tools available. Select a problem from the picker to begin an exam session.
+
+---
+
+## Distribution Note
+
+This project is distributed as source code and does not include a precompiled executable .jar file. This decision responds to technical and transparency considerations:
+* JavaFX Architecture: Modern JavaFX applications require native libraries specific to each platform (Windows, macOS, Linux) that cannot be packaged universally in a single .jar without specialized tools.
+* External Dependencies: The application uses SQLite JDBC and JavaFX components that require specific classpath configuration, complicating distribution via a simple JAR file.
+* Academic Transparency: By providing the complete source code, the project's transparency is guaranteed and it facilitates code review, debugging, and customization by other developers.
+
+For a robust multi-platform distribution, it would be recommended to use tools that exceed the academic scope of this project, which is why we opt for distribution as source code with clear compilation instructions.
+
+## Author
+
+Héctor Zamorano García
+
+Project developed collaboratively with:
+* Unai Soler
+* Jordi Encabo
+
+## Notes
+
+This project was created for academic and training purposes.
+Occasional AI assistance (Copilot) was used only for syntax suggestions, materials from Stack Overflow and some technical videos were also consulted.
+All architecture, logic, UX decisions, and debugging were performed manually.
+
+## Version and Requirements
+
+* Java 17+
+* JavaFX 24
+* SQLite JDBC Driver
+* Scene Builder (optional, for editing FXML views)
+
+## License
+
+This project is provided for educational use.
+Redistribution or commercial use requires explicit permission from the authors.
