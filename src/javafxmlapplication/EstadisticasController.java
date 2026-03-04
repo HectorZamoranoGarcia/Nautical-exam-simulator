@@ -2,7 +2,6 @@
 
 import java.net.URL;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,10 +14,15 @@ import javafx.scene.image.Image;
 
 import model.NavDAOException;
 import model.Navigation;
-import model.Session;
 import model.User;
 import model.sub.SqliteConnection;
 
+import java.time.LocalDate;
+
+/**
+ * Controller for the statistics overview screen.
+ * Displays aggregate hit/fault totals and their percentages.
+ */
 public class EstadisticasController implements Initializable {
 
     @FXML
@@ -40,36 +44,38 @@ public class EstadisticasController implements Initializable {
     private Label labelNumFallos;
 
     private String nick;
-    private String email;
     private String pass;
-    private Image avatar;
-    private LocalDate birthday;
 
-    private Session session;
-    private int totalAciertos;
-    private int totalFallos;
-
-    public void initUser(String u, String e, String p, Image a, LocalDate dt) {
-        nick = u;
-        email = e;
-        pass = p;
-        avatar = a;
-        birthday = dt;
+    /**
+     * Populates the user context required for the statistics query.
+     *
+     * @param nick     the user's nickname
+     * @param email    the user's email address
+     * @param pass     the user's password
+     * @param avatar   the user's avatar image
+     * @param birthday the user's date of birth
+     */
+    public void initUser(String nick, String email, String pass, Image avatar, LocalDate birthday) {
+        this.nick = nick;
+        this.pass = pass;
     }
 
-    public void initEstadisticas(int tA, int tF) {
-        totalAciertos = tA;
-        totalFallos = tF;
-
-        double numProblemas = totalAciertos + totalFallos;
-        double lPorAciertos = ((totalAciertos / numProblemas) * 100);
-        double lPorFallos = ((totalFallos / numProblemas) * 100);
+    /**
+     * Calculates and displays aggregate statistics from the raw hit/fault counts.
+     *
+     * @param totalHits   total number of correctly answered questions across all sessions
+     * @param totalFaults total number of incorrectly answered questions across all sessions
+     */
+    public void initEstadisticas(int totalHits, int totalFaults) {
+        double numProblemas = totalHits + totalFaults;
+        double porcentajeAciertos = ((totalHits / numProblemas) * 100);
+        double porcentajeFallos = ((totalFaults / numProblemas) * 100);
 
         labelProblemas.setText(numProblemas + "");
-        labelPorAciertos.setText(lPorAciertos + "%");
-        labelNumAciertos.setText(totalAciertos + "");
-        labelPorFallos.setText(lPorFallos + "%");
-        labelNumFallos.setText(totalFallos + "");
+        labelPorAciertos.setText(porcentajeAciertos + "%");
+        labelNumAciertos.setText(totalHits + "");
+        labelPorFallos.setText(porcentajeFallos + "%");
+        labelNumFallos.setText(totalFaults + "");
     }
 
     @Override
@@ -77,18 +83,15 @@ public class EstadisticasController implements Initializable {
         try {
             SqliteConnection sqlite = new SqliteConnection();
             sqlite.connectSqlite("data.db");
-            System.out.println("Base de datos encontrada");
         } catch (SQLException ex) {
-            System.out.println("Base de datos no encontrada");
+            Logger.getLogger(EstadisticasController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         try {
             Navigation nav = Navigation.getInstance();
-            User res = nav.authenticate(nick, pass);
+            User authenticatedUser = nav.authenticate(nick, pass);
         } catch (NavDAOException ex) {
             Logger.getLogger(EstadisticasController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }
-
-

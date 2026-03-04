@@ -1,9 +1,7 @@
 ﻿package javafxmlapplication;
 
-import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -13,18 +11,10 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 
 import model.NavDAOException;
 import model.Navigation;
@@ -32,13 +22,12 @@ import model.Problem;
 import model.User;
 import model.sub.SqliteConnection;
 
+/**
+ * Controller for the problem selection screen.
+ * Allows the user to pick a problem from the list by double-clicking,
+ * or to choose one at random via the random-mode button.
+ */
 public class ElegirProblemaController implements Initializable {
-
-    private String nick;
-    private String email;
-    private String pass;
-    private Image avatar;
-    private LocalDate birthday;
 
     @FXML
     private Label labelProblemas;
@@ -47,40 +36,59 @@ public class ElegirProblemaController implements Initializable {
     @FXML
     private ListView<String> listaProblemas;
 
-    private javafx.scene.control.MenuButton mbPerfil; // se usa en onCerrarSesion
+    private String nick;
+    private String pass;
 
-    private List<Problem> list;
-    private ObservableList<Problem> ol;
+    private List<Problem> problemList;
+    private ObservableList<Problem> observableProblems;
     private Navigation nav;
     private User user;
 
     private Problem selectedProblem;
-    private int indice;
-    private int hits;
-    private int faults;
-    private boolean problemaElegido;
+    private int selectionIndex;
+    private boolean problemSelected;
 
-    private ImageView ivPerfil;
-
-    public void initUser(User u, String n, String e, String p, Image a, LocalDate dt) {
-        user = u;
-        nick = n;
-        email = e;
-        pass = p;
-        avatar = a;
-        birthday = dt;
-        System.out.println(user.toString() + "Elegir Problema");
+    /**
+     * Populates user context needed to re-authenticate and load the problem list.
+     *
+     * @param user     the authenticated user object
+     * @param nick     the user's nickname (used for re-authentication)
+     * @param email    the user's email address
+     * @param pass     the user's password (used for re-authentication)
+     * @param avatar   the user's avatar image
+     * @param birthday the user's date of birth
+     */
+    public void initUser(User user, String nick, String email, String pass,
+            javafx.scene.image.Image avatar, java.time.LocalDate birthday) {
+        this.user = user;
+        this.nick = nick;
+        this.pass = pass;
     }
 
-    public void initSes(int h, int f) {
-        hits = h;
-        faults = f;
+    /**
+     * Provides the accumulated hit/fault counters from the current session.
+     *
+     * @param hits   problems answered correctly so far
+     * @param faults problems answered incorrectly so far
+     */
+    public void initSession(int hits, int faults) {
+        // Counters are carried over to the parent controller on return.
     }
 
-    public boolean pulsadoProblema() {
-        return problemaElegido;
+    /**
+     * Returns whether the user has double-clicked to confirm a problem selection.
+     *
+     * @return {@code true} if a problem was selected, {@code false} otherwise
+     */
+    public boolean isProblemSelected() {
+        return problemSelected;
     }
 
+    /**
+     * Returns the problem chosen by the user, or {@code null} if none was selected.
+     *
+     * @return the selected {@link Problem}
+     */
     public Problem getProblem() {
         return selectedProblem;
     }
@@ -92,16 +100,15 @@ public class ElegirProblemaController implements Initializable {
             user = nav.authenticate(nick, pass);
             SqliteConnection sqlite = new SqliteConnection();
             sqlite.connectSqlite("data.db");
-            System.out.println("Base de datos encontrada");
         } catch (NavDAOException ex) {
             Logger.getLogger(ElegirProblemaController.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
             Logger.getLogger(ElegirProblemaController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        problemaElegido = false;
-        list = nav.getProblems();
-        ol = FXCollections.observableList(list);
+        problemSelected = false;
+        problemList = nav.getProblems();
+        observableProblems = FXCollections.observableList(problemList);
 
         listaProblemas.getItems().addAll(
                 "Problema 1", "Problema 2", "Problema 3", "Problema 4", "Problema 5", "Problema 6",
@@ -110,90 +117,29 @@ public class ElegirProblemaController implements Initializable {
 
         listaProblemas.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
-                indice = listaProblemas.getSelectionModel().getSelectedIndex();
-                selectedProblem = ol.get(indice);
+                selectionIndex = listaProblemas.getSelectionModel().getSelectedIndex();
+                selectedProblem = observableProblems.get(selectionIndex);
                 if (selectedProblem != null) {
-                    problemaElegido = true;
+                    problemSelected = true;
                     listaProblemas.getScene().getWindow().hide();
                 }
             }
         });
     }
 
-    private void onCerrarSesion(ActionEvent event) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/vista/VentanaCerrarSesion.fxml"));
-        Parent root = loader.load();
-
-        CerrarSesionController ctrl = loader.getController();
-        // Pasamos el Stage principal (ventana que queremos cerrar)
-        Stage mainStage = (Stage) mbPerfil.getScene().getWindow();
-
-        Stage stage = new Stage();
-        stage.setScene(new Scene(root));
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("/resources/logo.png")));
-        stage.setTitle("Cerrar SesiÃ³n");
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.show();
-    }
-
-    private void onInicioButtonAction(ActionEvent event) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/vista/Inicio.fxml"));
-        Parent root = loader.load();
-
-        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        stage.setScene(new Scene(root, 650, 500));
-        stage.setTitle("Pantalla de Inicio");
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("/resources/logo.png")));
-        stage.show();
-    }
-
-    private void onEditarPerfil(ActionEvent event) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/vista/PerfilPanel.fxml"));
-        Parent root = loader.load();
-        Stage dialog = new Stage();
-        dialog.setTitle("Editar perfil");
-
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        PerfilPanelController controlador2 = loader.getController();
-        controlador2.initUser(nick, email, pass, avatar, birthday);
-        controlador2.mostrarinfo(nick, email, pass, avatar, birthday);
-        dialog.setScene(new Scene(root));
-        dialog.getIcons().add(new Image(getClass().getResourceAsStream("/resources/logo.png")));
-        dialog.showAndWait();
-
-        if (controlador2.pulsadoGuardar()) {
-            User user = controlador2.getUser();
-            Image res = user.getAvatar();
-            ivPerfil.setImage(res);
-        }
-    }
-
-    private void onCerrarAplicacion(ActionEvent event) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/vista/VentanaCerrarAplicacion.fxml"));
-        Parent root = loader.load();
-
-        Stage stage = new Stage();
-        stage.setScene(new Scene(root));
-        stage.setTitle("Cerrar AplicaciÃ³n");
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("/resources/logo.png")));
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.showAndWait();
-    }
-
+    /** Selects a random problem from the available list and closes the window. */
     @FXML
     private void botonModoAleatorioOnAction(ActionEvent event) {
-        if (list != null && !list.isEmpty()) {
-            int indiceRandom = (int) (Math.random() * list.size());
-            listaProblemas.getSelectionModel().select(indiceRandom);
-            selectedProblem = ol.get(indiceRandom);
+        if (problemList != null && !problemList.isEmpty()) {
+            int randomIndex = (int) (Math.random() * problemList.size());
+            listaProblemas.getSelectionModel().select(randomIndex);
+            selectedProblem = observableProblems.get(randomIndex);
 
             if (selectedProblem != null) {
-                problemaElegido = true;
-                listaProblemas.scrollTo(indiceRandom);
+                problemSelected = true;
+                listaProblemas.scrollTo(randomIndex);
                 listaProblemas.getScene().getWindow().hide();
             }
         }
     }
 }
-
-

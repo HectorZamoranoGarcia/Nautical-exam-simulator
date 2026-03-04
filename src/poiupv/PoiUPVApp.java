@@ -7,29 +7,39 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
+/**
+ * JavaFX application entry point for the Nautical Exam Simulator.
+ * Loads the authentication window on first launch and exposes a static
+ * method to re-open that window without restarting the JVM.
+ */
 public class PoiUPVApp extends Application {
 
-    private static Stage Pstage;
+    private static Stage primaryStage;
     private static PoiUPVApp instance;
 
     @Override
     public void start(Stage stage) throws Exception {
         instance = this;
-        Pstage = stage;
+        primaryStage = stage;
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/vista/VentanaAutenticacion.fxml"));
         Parent root = loader.load();
-        Pstage.getIcons().add(new Image(getClass().getResourceAsStream("/resources/logo1.png")));
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/resources/logo1.png")));
         Scene scene = new Scene(root);
-        Pstage.setTitle("Bienvenido");
-        Pstage.setScene(scene);
-        Pstage.setMinWidth(660);
-        Pstage.setMinHeight(400);
-        Pstage.show();
+        primaryStage.setTitle("Bienvenido");
+        primaryStage.setScene(scene);
+        primaryStage.setMinWidth(660);
+        primaryStage.setMinHeight(400);
+        primaryStage.show();
     }
 
+    /**
+     * Creates a new top-level window and re-launches the authentication screen.
+     * Used to return to login after a session ends without restarting the JVM.
+     *
+     * @throws Exception if the FXML file cannot be loaded
+     */
     public static void reiniciarApp() throws Exception {
-        // Crea un nuevo Stage y vuelve a lanzar start()
         Stage newStage = new Stage();
         instance.start(newStage);
     }
@@ -38,5 +48,3 @@ public class PoiUPVApp extends Application {
         launch(args);
     }
 }
-
-

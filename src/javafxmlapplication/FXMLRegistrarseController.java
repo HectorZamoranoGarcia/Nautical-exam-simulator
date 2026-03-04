@@ -1,7 +1,6 @@
 ﻿package javafxmlapplication;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -13,9 +12,11 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -30,6 +31,11 @@ import model.Navigation;
 import model.User;
 import model.sub.SqliteConnection;
 
+/**
+ * Controller for the user registration window.
+ * Validates all fields in real-time and enables the accept button
+ * only when all inputs pass their validation rules.
+ */
 public class FXMLRegistrarseController implements Initializable {
 
     @FXML
@@ -48,6 +54,14 @@ public class FXMLRegistrarseController implements Initializable {
     private DatePicker dateField;
     @FXML
     private Label dateError;
+    @FXML
+    private TextField usuarioField;
+    @FXML
+    private Label usuarioError;
+    @FXML
+    private Button PredAvatarButton;
+    @FXML
+    private Button subirAvatarButton;
 
     private BooleanProperty validEmail;
     private BooleanProperty validPassword;
@@ -61,15 +75,10 @@ public class FXMLRegistrarseController implements Initializable {
 
     private Image avatar;
 
-    @FXML
-    private TextField usuarioField;
-    @FXML
-    private Label usuarioError;
-    @FXML
-    private Button PredAvatarButton;
-    @FXML
-    private Button subirAvatarButton;
-
+    /**
+     * Checks whether the entered username is unique in the database.
+     * Highlights the field and shows an error label if the name already exists.
+     */
     private void checkUser() throws NavDAOException {
         String user = usuarioField.getText();
         Navigation nav = Navigation.getInstance();
@@ -78,6 +87,10 @@ public class FXMLRegistrarseController implements Initializable {
         showError(!isValid, usuarioField, usuarioError);
     }
 
+    /**
+     * Validates the entered email address against the RFC-compatible regex.
+     * Highlights the field and shows an error label on failure.
+     */
     private void checkEmail() {
         String email = emailField.getText();
         boolean isValid = email.matches(
@@ -86,6 +99,10 @@ public class FXMLRegistrarseController implements Initializable {
         showError(isValid, emailField, emailError);
     }
 
+    /**
+     * Validates the password against the strength rule: 8–15 characters,
+     * at least one letter and one digit.
+     */
     private void checkPassword() {
         String password = passwordField.getText();
         boolean isValid = password.matches("^(?=.*[0-9])(?=.*[a-zA-Z]).{8,15}$");
@@ -93,6 +110,10 @@ public class FXMLRegistrarseController implements Initializable {
         showError(isValid, passwordField, passwordError);
     }
 
+    /**
+     * Validates that the selected birthdate implies the user is at least 16 years
+     * old.
+     */
     private void checkDate() {
         LocalDate value = dateField.getValue();
         boolean isValid = value.isBefore(LocalDate.now().minus(16, YEARS));
@@ -100,6 +121,14 @@ public class FXMLRegistrarseController implements Initializable {
         showError(isValid, dateField, dateError);
     }
 
+    /**
+     * Toggles the visibility of an error label and applies a red background
+     * to the invalid field.
+     *
+     * @param isValid      {@code true} if the field contains a valid value
+     * @param field        the input control to style
+     * @param errorMessage the label to show or hide
+     */
     private void showError(boolean isValid, Node field, Node errorMessage) {
         errorMessage.setVisible(!isValid);
         field.setStyle(isValid ? "" : "-fx-background-color: #FCE5E0");
@@ -110,9 +139,8 @@ public class FXMLRegistrarseController implements Initializable {
         try {
             SqliteConnection sqlite = new SqliteConnection();
             sqlite.connectSqlite("data.db");
-            System.out.println("Base de datos encontrada");
         } catch (SQLException ex) {
-            System.out.println("Base de datos no encontrada");
+            // Database file not found; application cannot proceed without it.
         }
 
         validUser = new SimpleBooleanProperty(false);
@@ -175,23 +203,17 @@ public class FXMLRegistrarseController implements Initializable {
             }
         });
 
-        LocalDateStringConverter localDateStringConverter = new LocalDateStringConverter() {
+        LocalDateStringConverter dateConverter = new LocalDateStringConverter() {
             @Override
             public LocalDate fromString(String value) {
                 try {
                     return super.fromString(value);
                 } catch (Exception e) {
-                    System.out.println("Exception in fromString");
                     return LocalDate.now();
                 }
             }
-
-            @Override
-            public String toString(LocalDate value) {
-                return super.toString(value);
-            }
         };
-        dateField.setConverter(localDateStringConverter);
+        dateField.setConverter(dateConverter);
 
         BooleanBinding validFields = Bindings
                 .and(validEmail, validPassword)
@@ -202,45 +224,39 @@ public class FXMLRegistrarseController implements Initializable {
     }
 
     @FXML
-    private void handleBAcceptOnAction(javafx.event.ActionEvent event) throws IOException, NavDAOException {
+    private void handleBAcceptOnAction(ActionEvent event) throws java.io.IOException, NavDAOException {
         String user = usuarioField.getText();
         String email = emailField.getText();
         String password = passwordField.getText();
         LocalDate birthdate = dateField.getValue();
 
         Navigation nav = Navigation.getInstance();
-        User res = nav.registerUser(user, email, password, avatar, birthdate);
-        System.out.println("Usuario Registrado");
+        User registeredUser = nav.registerUser(user, email, password, avatar, birthdate);
 
         ((javafx.stage.Stage) ((Node) event.getSource()).getScene().getWindow()).close();
     }
 
     @FXML
-    private void handleBCanceltOnAction(javafx.event.ActionEvent event) {
+    private void handleBCanceltOnAction(ActionEvent event) {
         ((javafx.stage.Stage) ((Node) event.getSource()).getScene().getWindow()).close();
     }
 
     @FXML
-    private void subirAvatar(javafx.event.ActionEvent event) throws IOException {
-        FileChooser fc = new FileChooser();
-        fc.setTitle("Abrir Fichero");
-        fc.getExtensionFilters().addAll(
-                new ExtensionFilter("ImÃ¡genes", "*.png", "*.jpg"),
+    private void subirAvatar(ActionEvent event) throws java.io.IOException {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Abrir Fichero");
+        fileChooser.getExtensionFilters().addAll(
+                new ExtensionFilter("Imágenes", "*.png", "*.jpg"),
                 new ExtensionFilter("Todos", "*.*"));
-        File fichero = fc.showOpenDialog(((Node) event.getSource()).getScene().getWindow());
+        File selectedFile = fileChooser.showOpenDialog(((Node) event.getSource()).getScene().getWindow());
 
-        if (fichero != null) {
-            String ruta = fichero.toURI().toString();
-            System.out.println("Ruta URI: " + ruta);
-            avatar = new Image(ruta);
-            System.out.println("avatar modificado");
+        if (selectedFile != null) {
+            avatar = new Image(selectedFile.toURI().toString());
         }
     }
 
     @FXML
-    private void predAvatarAction(javafx.event.ActionEvent event) {
+    private void predAvatarAction(ActionEvent event) {
         avatar = new Image(getClass().getResourceAsStream("/resources/usuario.png"));
     }
 }
-
-

@@ -1,8 +1,5 @@
 ﻿package javafxmlapplication;
 
-import java.net.URL;
-import java.util.ResourceBundle;
-
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -11,6 +8,13 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
+import java.net.URL;
+import java.util.ResourceBundle;
+
+/**
+ * Controller for the "Close Application" confirmation dialog.
+ * Exits the JVM on accept, or dismisses the dialog on cancel.
+ */
 public class CerrarAplicacionController implements Initializable {
 
     @FXML
@@ -20,7 +24,7 @@ public class CerrarAplicacionController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // nada que inicializar por ahora
+        // Nothing to initialize.
     }
 
     @FXML
@@ -33,5 +37,3 @@ public class CerrarAplicacionController implements Initializable {
         ((Stage) ((Node) event.getSource()).getScene().getWindow()).hide();
     }
 }
-
-

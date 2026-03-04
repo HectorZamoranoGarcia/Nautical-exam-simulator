@@ -2,7 +2,6 @@
 
 import java.net.URL;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,7 +12,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import model.NavDAOException;
@@ -21,6 +19,10 @@ import model.Navigation;
 import model.User;
 import model.sub.SqliteConnection;
 
+/**
+ * Controller for the "Close Session" confirmation dialog.
+ * Persists the current session statistics on accept, or returns to the app on cancel.
+ */
 public class CerrarSesionController implements Initializable {
 
     @FXML
@@ -30,38 +32,35 @@ public class CerrarSesionController implements Initializable {
 
     private int hits;
     private int faults;
-
-    private String nick;
-    private String pass;
-    private String email;
-    private Image avatar;
-    private LocalDate birthday;
-
     private User user;
     private Navigation nav;
 
-    public void initUser(User u, String n, String e, String p, Image a, LocalDate dt) {
-        user = u;
-        nick = n;
-        email = e;
-        pass = p;
-        avatar = a;
-        birthday = dt;
-        System.out.println(user + " Cerrar Sesion");
+    /**
+     * Populates the user context for this dialog.
+     *
+     * @param user the authenticated user whose session will be persisted
+     */
+    public void initUser(User user, String nick, String email, String pass,
+                         javafx.scene.image.Image avatar, java.time.LocalDate birthday) {
+        this.user = user;
     }
 
-    public void initSesion(int h, int f) {
-        hits = h;
-        faults = f;
+    /**
+     * Sets the hit/fault counters accumulated during the current work session.
+     *
+     * @param hits   number of correctly answered problems
+     * @param faults number of incorrectly answered problems
+     */
+    public void initSesion(int hits, int faults) {
+        this.hits = hits;
+        this.faults = faults;
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         try {
-            System.out.println(pass);
             SqliteConnection sqlite = new SqliteConnection();
             sqlite.connectSqlite("data.db");
-            System.out.println("Base de datos encontrada");
             nav = Navigation.getInstance();
         } catch (NavDAOException ex) {
             Logger.getLogger(CerrarSesionController.class.getName()).log(Level.SEVERE, null, ex);
@@ -81,5 +80,3 @@ public class CerrarSesionController implements Initializable {
         ((Stage) ((Node) event.getSource()).getScene().getWindow()).close();
     }
 }
-
-

@@ -1,6 +1,5 @@
 ﻿package javafxmlapplication;
 
-import java.io.File;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -25,6 +24,10 @@ import model.Navigation;
 import model.User;
 import model.sub.SqliteConnection;
 
+/**
+ * Controller for the user profile edit dialog.
+ * Allows the user to update their password, email, avatar, and birthdate.
+ */
 public class PerfilPanelController implements Initializable {
 
     @FXML
@@ -39,23 +42,35 @@ public class PerfilPanelController implements Initializable {
     private ImageView ivDialogIcon;
 
     private String nick;
-    private String email;
     private String pass;
-    private Image avatar;
-    private LocalDate birthday;
-    private Boolean pulsadoGuardar;
+    private boolean saveConfirmed;
     private User user;
     private Navigation nav;
 
-    public void initUser(String u, String e, String p, Image a, LocalDate dt) {
-        nick = u;
-        email = e;
-        pass = p;
-        avatar = a;
-        birthday = dt;
+    /**
+     * Stores the user credentials needed to re-authenticate before saving changes.
+     *
+     * @param nick     the user's current nickname
+     * @param email    the user's current email address
+     * @param pass     the user's current password
+     * @param avatar   the user's current avatar image
+     * @param birthday the user's date of birth
+     */
+    public void initUser(String nick, String email, String pass, Image avatar, LocalDate birthday) {
+        this.nick = nick;
+        this.pass = pass;
     }
 
-    public void mostrarinfo(String u, String e, String p, Image a, LocalDate dt) {
+    /**
+     * Pre-fills the dialog fields with the current user data.
+     *
+     * @param nick     the user's current nickname
+     * @param email    the user's current email address
+     * @param pass     the user's current password
+     * @param avatar   the user's current avatar image
+     * @param birthday the user's date of birth
+     */
+    public void populateFields(String nick, String email, String pass, Image avatar, LocalDate birthday) {
         tfUsuario.setText(nick);
         pfContrasena.setText(pass);
         tfEmail.setText(email);
@@ -63,24 +78,33 @@ public class PerfilPanelController implements Initializable {
         dpFechaNacimiento.setValue(birthday);
     }
 
-    public boolean pulsadoGuardar() {
-        return pulsadoGuardar;
+    /**
+     * Returns whether the user confirmed saving the profile changes.
+     *
+     * @return {@code true} if the save button was pressed successfully
+     */
+    public boolean isSaveConfirmed() {
+        return saveConfirmed;
     }
 
+    /**
+     * Returns the updated user object after a successful save.
+     *
+     * @return the updated {@link User}
+     */
     public User getUser() {
         return user;
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        pulsadoGuardar = false;
+        saveConfirmed = false;
 
         try {
             SqliteConnection sqlite = new SqliteConnection();
             sqlite.connectSqlite("data.db");
-            System.out.println("Base de datos encontrada");
         } catch (SQLException ex) {
-            System.out.println("Base de datos no encontrada");
+            Logger.getLogger(PerfilPanelController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         try {
@@ -91,55 +115,53 @@ public class PerfilPanelController implements Initializable {
         }
     }
 
-    /** Abre el FileChooser para cambiar el avatar */
+    /** Opens a file chooser so the user can pick a new avatar image. */
     @FXML
     void onChooseAvatar() {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Selecciona un avatar");
         chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("ImÃ¡genes", "*.png", "*.jpg", "*.jpeg"));
+                new FileChooser.ExtensionFilter("Imágenes", "*.png", "*.jpg", "*.jpeg"));
         Window win = ivDialogIcon.getScene().getWindow();
-        File f = chooser.showOpenDialog(win);
-        if (f != null) {
-            ivDialogIcon.setImage(new Image(f.toURI().toString()));
+        java.io.File file = chooser.showOpenDialog(win);
+        if (file != null) {
+            ivDialogIcon.setImage(new Image(file.toURI().toString()));
         }
     }
 
-    /** Guarda los cambios (aquÃ­ solo cierra el diÃ¡logo) */
+    /** Validates and persists all profile changes, then closes the dialog. */
     @FXML
     void onGuardar() throws NavDAOException {
         user = nav.authenticate(nick, pass);
         if (pfContrasena.getText().length() < 8) {
-            showError("La contraseÃ±a debe tener al menos 8 caracteres.");
+            showError("La contraseña debe tener al menos 8 caracteres.");
             return;
         } else {
             user.setPassword(pfContrasena.getText());
             user.setEmail(tfEmail.getText());
             user.setAvatar(ivDialogIcon.getImage());
             user.setBirthdate(dpFechaNacimiento.getValue());
-            pulsadoGuardar = true;
+            saveConfirmed = true;
         }
         ivDialogIcon.getScene().getWindow().hide();
-        showInfo("Cambios guardados, para su visualizaciÃ³n debe reiniciar el programa.");
+        showInfo("Cambios guardados, para su visualización debe reiniciar el programa.");
     }
 
-    /** Cancela y cierra */
+    /** Discards any changes and closes the dialog. */
     @FXML
     void onCancelar() {
         ivDialogIcon.getScene().getWindow().hide();
     }
 
-    private void showError(String msg) {
-        Alert a = new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK);
-        a.initOwner(ivDialogIcon.getScene().getWindow());
-        a.showAndWait();
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
+        alert.initOwner(ivDialogIcon.getScene().getWindow());
+        alert.showAndWait();
     }
 
-    private void showInfo(String msg) {
-        Alert a = new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK);
-        a.initOwner(ivDialogIcon.getScene().getWindow());
-        a.showAndWait();
+    private void showInfo(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
+        alert.initOwner(ivDialogIcon.getScene().getWindow());
+        alert.showAndWait();
     }
 }
-
-

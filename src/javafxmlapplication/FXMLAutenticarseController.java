@@ -12,33 +12,37 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+
 import model.NavDAOException;
 import model.Navigation;
 import model.User;
 import model.sub.SqliteConnection;
 
+/**
+ * Controller for the login (authentication) window.
+ * Validates credentials and opens the main work screen on success.
+ */
 public class FXMLAutenticarseController implements Initializable {
 
     @FXML
     private Label emailError;
     @FXML
-    private Button bAccept;
-    @FXML
-    private Button bCancel;
+    private Label passwordError;
     @FXML
     private TextField passwordField;
     @FXML
-    private Label passwordError;
-    @FXML
     private TextField usuarioField;
     @FXML
-    private Button RegistrarseButton;
+    private javafx.scene.control.Button bAccept;
+    @FXML
+    private javafx.scene.control.Button bCancel;
+    @FXML
+    private javafx.scene.control.Button RegistrarseButton;
 
     private int hits = 0;
     private int faults = 0;
@@ -48,17 +52,20 @@ public class FXMLAutenticarseController implements Initializable {
         try {
             SqliteConnection sqlite = new SqliteConnection();
             sqlite.connectSqlite("data.db");
-            System.out.println("Base de datos encontrada");
             try {
                 Navigation.getInstance();
             } catch (NavDAOException ex) {
-                System.out.println("hola");
+                // Navigation singleton not yet ready; will be retried on login action.
             }
         } catch (SQLException ex) {
-            System.out.println("Base de datos no encontrada");
+            // Database file not found; application cannot proceed without it.
         }
     }
 
+    /**
+     * Authenticates the user with the entered credentials and opens the main screen.
+     * Shows nothing if the nickname does not exist or credentials are incorrect.
+     */
     @FXML
     private void handleBAcceptOnAction(ActionEvent event) throws IOException, NavDAOException {
         String nick = usuarioField.getText();
@@ -79,11 +86,10 @@ public class FXMLAutenticarseController implements Initializable {
                 stage.setMinWidth(900);
                 stage.setMinHeight(630);
 
-                FXMLTrabajoController controlador1 = loader.getController();
-                controlador1.initUser(user, user.getNickName(), user.getEmail(), user.getPassword(), user.getAvatar(),
-                        user.getBirthdate());
-                controlador1.initSes(hits, faults);
-                System.out.println(user + " Autenticarse");
+                FXMLTrabajoController workController = loader.getController();
+                workController.initUser(user, user.getNickName(), user.getEmail(),
+                        user.getPassword(), user.getAvatar(), user.getBirthdate());
+                workController.initSes(hits, faults);
 
                 ((Stage) ((Node) event.getSource()).getScene().getWindow()).close();
                 stage.show();
@@ -109,5 +115,3 @@ public class FXMLAutenticarseController implements Initializable {
         stage.showAndWait();
     }
 }
-
-

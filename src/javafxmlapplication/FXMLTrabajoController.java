@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -69,9 +68,18 @@ import model.User;
 import model.sub.SqliteConnection;
 import poiupv.Poi;
 
+/**
+ * Primary controller for the nautical exam workspace (FXMLTrabajo.fxml).
+ *
+ * <p>
+ * This controller manages the full working environment: the zoomable/pannable
+ * chart pane, all drawing tools (point, line, arc, text, protractor, ruler),
+ * the problem lifecycle (select → answer → score), and user session management.
+ * </p>
+ */
 public class FXMLTrabajoController implements Initializable {
 
-    // â€” Zoom y estructura â€”
+    // ── Zoom and canvas structure ─────────────────────────────────────────────
     private Group zoomGroup;
     private final Delta dragDelta = new Delta();
 
@@ -84,7 +92,7 @@ public class FXMLTrabajoController implements Initializable {
     @FXML
     private Pane paneCarta;
 
-    // â€” Perfil / menÃº â€”
+    // ── Profile / top menu ───────────────────────────────────────────────────
     @FXML
     private MenuButton mbPerfil;
     @FXML
@@ -94,7 +102,7 @@ public class FXMLTrabajoController implements Initializable {
     @FXML
     private MenuItem menuItemLimpiarCartaTool;
 
-    // â€” ColorPickers y controles â€”
+    // ── Color pickers and arc/text controls ──────────────────────────────────
     @FXML
     private ColorPicker colorPickkerPunto;
     @FXML
@@ -110,7 +118,7 @@ public class FXMLTrabajoController implements Initializable {
     @FXML
     private ColorPicker colorPickerEdicion;
 
-    // â€” MenÃºs / herramientas â€”
+    // ── Toolbar menus ─────────────────────────────────────────────────────────
     @FXML
     private MenuItem menuItemIniciarLinea;
     @FXML
@@ -168,7 +176,7 @@ public class FXMLTrabajoController implements Initializable {
     @FXML
     private Menu menuAyuda;
 
-    // â€” ImÃ¡genes/Ã­conos â€”
+    // ── Icons ─────────────────────────────────────────────────────────────────
     @FXML
     private ImageView ivPerfil;
     @FXML
@@ -190,10 +198,9 @@ public class FXMLTrabajoController implements Initializable {
     @FXML
     private ImageView ivMenuHerramienta;
 
-    // â€” Problemas â€”
+    // ── Problem area ──────────────────────────────────────────────────────────
     @FXML
     private TextArea taProblem;
-    private Problem currentProblem;
     @FXML
     private MenuItem estadisticasButton;
     @FXML
@@ -211,15 +218,15 @@ public class FXMLTrabajoController implements Initializable {
     @FXML
     private Button buttonTerminarProblema;
 
-    // â€” Layout raÃ­z â€”
+    // ── Root layout ───────────────────────────────────────────────────────────
     @FXML
     private BorderPane borderPane;
 
-    // â€” Preview dinÃ¡mico de lÃ­nea â€”
+    // ── Live line preview ─────────────────────────────────────────────────────
     private Group previewLineGroup;
     private EventHandler<MouseEvent> lineDragHandler;
 
-    // â€” HBoxes para tooltips â€”
+    // ── Tooltip HBoxes ─────────────────────────────────────────────────────────
     @FXML
     private HBox hboxMarcarPunto;
     @FXML
@@ -239,7 +246,7 @@ public class FXMLTrabajoController implements Initializable {
     @FXML
     private HBox hboxAyuda;
 
-    // â€” Estado global herramientas â€”
+    // ── Active tool state ─────────────────────────────────────────────────────
     private enum Tool {
         NONE, POINT, LINE, ARC, TEXT, EDIT_COLOR, DELETE, COMPASS, RULER, PROTRACTOR, LATLON_MARKER, REGLA_VISUAL
     }
@@ -247,32 +254,32 @@ public class FXMLTrabajoController implements Initializable {
     private Tool currentTool = Tool.NONE;
     private boolean markingEnabled = false;
 
-    // â€” Punto â€”
+    // ── Point tool ────────────────────────────────────────────────────────────
     private Color colorSeleccionado = Color.RED;
     private String tipoPunto = "circulo";
 
-    // â€” LÃ­nea â€”
+    // ── Line tool ─────────────────────────────────────────────────────────────
     private boolean lineStarted = false;
     private double lineStartX, lineStartY;
     private Color colorLinea = Color.RED;
     private double grosorLinea = 4;
 
-    // â€” Arco â€”
+    // ── Arc tool ──────────────────────────────────────────────────────────────
     private boolean arcStarted = false;
     private double arcCenterX, arcCenterY;
     private Color colorArco = Color.RED;
     private double grosorArco = 4;
     private double radioFijo = 30;
 
-    // â€” Texto â€”
+    // ── Text tool ─────────────────────────────────────────────────────────────
     private double tamanoTexto = 12;
     private Color colorTexto = Color.RED;
     private String textoPendiente;
 
-    // â€” EdiciÃ³n de color â€”
+    // ── Color-edit tool ───────────────────────────────────────────────────────
     private Color colorEdicion = Color.BLACK;
 
-    // â€” Herramientas visuales â€”
+    // ── Visual tools ──────────────────────────────────────────────────────────
     private Point2D compasP1, compasP2;
     private Point2D rulerP1, rulerP2;
     private ImageView ivOverlay;
@@ -283,69 +290,89 @@ public class FXMLTrabajoController implements Initializable {
     private ImageView ivRegla;
     private Stage rotationStage;
 
-    // â€” Modo arco â€”
+    // ── Arc mode ──────────────────────────────────────────────────────────────
     private enum ModoArco {
         RADIO_FIJO, RADIO_LIBRE
     }
 
     private ModoArco modoArco = ModoArco.RADIO_FIJO;
 
-    // â€” Usuario y navegaciÃ³n â€”
+    // ── User and navigation ───────────────────────────────────────────────────
     private Navigation nav;
     private String nick, email, pass;
     private Image avatar;
     private LocalDate birthday;
     private User user;
 
-    // â€” Problemas / stats â€”
+    // ── Problem / session stats ───────────────────────────────────────────────
     private List<Answer> listAnswers;
     private Problem problema;
-    private int indice;
     private List<model.Session> listSesions;
     private int hits;
     private int faults;
 
-    // â€” InyecciÃ³n de datos externos â€”
-    public void initUser(User u, String n, String e, String p, Image a, LocalDate dt) {
-        user = u;
-        nick = n;
-        email = e;
-        pass = p;
-        avatar = a;
-        birthday = dt;
+    // ─────────────────────────────────────────────────────────────────────────
+    // Data injection from the login screen
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Injects the authenticated user and their profile data.
+     * Must be called immediately after the FXML controller is retrieved from the
+     * loader.
+     */
+    public void initUser(User user, String nick, String email, String pass,
+            Image avatar, LocalDate birthday) {
+        this.user = user;
+        this.nick = nick;
+        this.email = email;
+        this.pass = pass;
+        this.avatar = avatar;
+        this.birthday = birthday;
         ivPerfil.imageProperty().setValue(user.getAvatar());
     }
 
-    public void initProblema(Problem p, int i) {
-        problema = p;
-        indice = i;
+    /**
+     * Pre-loads a specific problem directly into the work area.
+     *
+     * @param problem the problem to display
+     * @param index   the zero-based index of this problem in the full list
+     */
+    public void initProblema(Problem problem, int index) {
+        this.problema = problem;
         taProblem.setText(problema.getText());
     }
 
-    public void initSes(int h, int f) {
-        hits = h;
-        faults = f;
+    /**
+     * Seeds the hit/fault counters carried over from a previous session segment.
+     *
+     * @param hits   number of correct answers so far
+     * @param faults number of incorrect answers so far
+     */
+    public void initSes(int hits, int faults) {
+        this.hits = hits;
+        this.faults = faults;
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Helper inner class
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /** Holds x/y offsets used during mouse-drag operations. */
     private static class Delta {
         double x, y;
     }
 
-    // â€”â€”â€” InicializaciÃ³n â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
+    // ─────────────────────────────────────────────────────────────────────────
+    // Initialization
+    // ─────────────────────────────────────────────────────────────────────────
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        if (taProblem == null) {
-            System.out.println("TextArea 'taProblem' no ha sido inicializado correctamente.");
-        } else {
-            System.out.println("TextArea 'taProblem' ha sido inicializado correctamente.");
-        }
-
         try {
             SqliteConnection sqlite = new SqliteConnection();
             sqlite.connectSqlite("data.db");
-            System.out.println("Base de datos encontrada");
         } catch (SQLException ex) {
-            System.out.println("Base de datos no encontrada");
+            Logger.getLogger(FXMLTrabajoController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         buttonTerminarProblema.setDisable(true);
@@ -353,7 +380,7 @@ public class FXMLTrabajoController implements Initializable {
         try {
             nav = Navigation.getInstance();
         } catch (NavDAOException ex) {
-            System.out.println("Nav exception");
+            Logger.getLogger(FXMLTrabajoController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         buttonA.setVisible(false);
@@ -364,7 +391,6 @@ public class FXMLTrabajoController implements Initializable {
         sliderGrosorArco.setShowTickLabels(true);
         sliderGrosorArco.setShowTickMarks(true);
 
-        // TamaÃ±os y barras del lienzo
         paneCarta.setPrefSize(2500, 1700);
         map_scrollpane.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
         map_scrollpane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
@@ -375,7 +401,7 @@ public class FXMLTrabajoController implements Initializable {
 
         taProblem.setWrapText(true);
 
-        // Sliders de grosor
+        // Line thickness slider
         sliderGrosorLinea.setMin(1);
         sliderGrosorLinea.setMax(10);
         sliderGrosorLinea.setBlockIncrement(1);
@@ -384,6 +410,7 @@ public class FXMLTrabajoController implements Initializable {
         sliderGrosorLinea.setValue(grosorLinea);
         sliderGrosorLinea.valueProperty().addListener((obs, o, nval) -> grosorLinea = nval.intValue());
 
+        // Arc thickness slider
         sliderGrosorArco.setMin(1);
         sliderGrosorArco.setMax(10);
         sliderGrosorArco.setBlockIncrement(1);
@@ -397,11 +424,10 @@ public class FXMLTrabajoController implements Initializable {
             colorearTickLabelsAzul(sliderGrosorArco);
         });
 
-        // TextFields iniciales
         textFieldRadioArco.setText(String.format("%.0f", radioFijo));
         textFieldTamanoTexto.setText(String.format("%.0f", tamanoTexto));
 
-        // â€” Transportador â€”
+        // Protractor overlay setup
         Image rawTransportador = new Image(getClass().getResourceAsStream("/resources/transportador.png"));
         Image overlayTransportador = makeOverlayPreserveGray(rawTransportador);
         ivOverlay = new ImageView(overlayTransportador);
@@ -428,19 +454,12 @@ public class FXMLTrabajoController implements Initializable {
             Point2D mouse = paneCarta.sceneToLocal(e.getSceneX(), e.getSceneY());
             double candidateX = mouse.getX() - dragDeltaOverlay.x;
             double candidateY = mouse.getY() - dragDeltaOverlay.y;
-
             double overlayWidth = ivOverlay.getBoundsInLocal().getWidth();
             double overlayHeight = ivOverlay.getBoundsInLocal().getHeight();
-
-            double minX = 0, minY = 0;
             double maxX = paneCarta.getWidth() - overlayWidth;
             double maxY = paneCarta.getHeight() - overlayHeight;
-
-            candidateX = Math.max(minX, Math.min(maxX, candidateX));
-            candidateY = Math.max(minY, Math.min(maxY, candidateY));
-
-            ivOverlay.setLayoutX(candidateX);
-            ivOverlay.setLayoutY(candidateY);
+            ivOverlay.setLayoutX(Math.max(0, Math.min(maxX, candidateX)));
+            ivOverlay.setLayoutY(Math.max(0, Math.min(maxY, candidateY)));
             e.consume();
         });
 
@@ -451,64 +470,61 @@ public class FXMLTrabajoController implements Initializable {
             e.consume();
         });
 
-        // â€” Regla â€”
-        Pane reglaContainer = new Pane();
-        reglaContainer.setPickOnBounds(true);
-        reglaContainer.setStyle("-fx-background-color: rgba(0,0,0,0);");
+        // Ruler overlay setup
+        Pane rulerPane = new Pane();
+        rulerPane.setPickOnBounds(true);
+        rulerPane.setStyle("-fx-background-color: rgba(0,0,0,0);");
 
-        Image reglaImg = new Image(getClass().getResourceAsStream("/resources/regla123.png"));
-        ivRegla = new ImageView(reglaImg);
+        Image rulerImage = new Image(getClass().getResourceAsStream("/resources/regla123.png"));
+        ivRegla = new ImageView(rulerImage);
         ivRegla.setOpacity(0.85);
         ivRegla.setScaleX(0.8);
         ivRegla.setScaleY(0.8);
         ivRegla.setMouseTransparent(true);
 
-        reglaContainer.getChildren().add(ivRegla);
-        paneCarta.getChildren().add(reglaContainer);
-        reglaContainer.setVisible(false);
+        rulerPane.getChildren().add(ivRegla);
+        paneCarta.getChildren().add(rulerPane);
+        rulerPane.setVisible(false);
 
         final Delta dragDeltaRegla = new Delta();
 
-        reglaContainer.setOnMousePressed(e -> {
+        rulerPane.setOnMousePressed(e -> {
             Point2D mouse = paneCarta.sceneToLocal(e.getSceneX(), e.getSceneY());
-            dragDeltaRegla.x = mouse.getX() - reglaContainer.getLayoutX();
-            dragDeltaRegla.y = mouse.getY() - reglaContainer.getLayoutY();
+            dragDeltaRegla.x = mouse.getX() - rulerPane.getLayoutX();
+            dragDeltaRegla.y = mouse.getY() - rulerPane.getLayoutY();
             e.consume();
         });
 
-        reglaContainer.setOnMouseDragged(event -> {
+        rulerPane.setOnMouseDragged(event -> {
             Point2D mouse = paneCarta.sceneToLocal(event.getSceneX(), event.getSceneY());
             double candidateX = mouse.getX() - dragDeltaRegla.x;
             double candidateY = mouse.getY() - dragDeltaRegla.y;
-
-            Bounds bounds = getBoundsAt(reglaContainer, candidateX, candidateY);
-
-            double minX = 0, minY = 0;
+            Bounds bounds = getBoundsAt(rulerPane, candidateX, candidateY);
             double maxX = paneCarta.getWidth();
             double maxY = paneCarta.getHeight();
 
-            if (bounds.getMinX() < minX)
-                candidateX += (minX - bounds.getMinX());
-            if (bounds.getMinY() < minY)
-                candidateY += (minY - bounds.getMinY());
+            if (bounds.getMinX() < 0)
+                candidateX += (0 - bounds.getMinX());
+            if (bounds.getMinY() < 0)
+                candidateY += (0 - bounds.getMinY());
             if (bounds.getMaxX() > maxX)
                 candidateX -= (bounds.getMaxX() - maxX);
             if (bounds.getMaxY() > maxY)
                 candidateY -= (bounds.getMaxY() - maxY);
 
-            reglaContainer.setLayoutX(candidateX);
-            reglaContainer.setLayoutY(candidateY);
+            rulerPane.setLayoutX(candidateX);
+            rulerPane.setLayoutY(candidateY);
             event.consume();
         });
 
-        reglaContainer.setOnScroll(e -> {
-            reglaContainer.setRotate(reglaContainer.getRotate() + e.getDeltaY() / 10);
+        rulerPane.setOnScroll(e -> {
+            rulerPane.setRotate(rulerPane.getRotate() + e.getDeltaY() / 10);
             e.consume();
         });
 
-        reglaContainer.setOnMouseReleased(e -> e.consume());
+        rulerPane.setOnMouseReleased(e -> e.consume());
 
-        this.reglaContainer = reglaContainer;
+        this.reglaContainer = rulerPane;
 
         // Tooltips
         instalarTooltip(hboxMarcarPunto, "Realizar marcas");
@@ -521,55 +537,55 @@ public class FXMLTrabajoController implements Initializable {
         instalarTooltip(hboxAyuda, "Ayuda");
         instalarTooltip(hboxHerramienta, "Regla, transportador y longitud y latitud");
 
-        // â€” Lat/Lon â€”
+        // Lat/Lon crosshair line placement
         paneCarta.setOnMousePressed(e -> {
             if (currentTool == Tool.LATLON_MARKER) {
                 double x = e.getX(), y = e.getY();
-
-                double ancho = 200000; // Horizontal (latitud)
-                double alto = 12000; // Vertical (longitud)
+                double ancho = 200000;
+                double alto = 12000;
 
                 double startXH = Math.max(0, x - ancho / 2);
                 double endXH = Math.min(paneCarta.getWidth(), x + ancho / 2);
                 double startYV = Math.max(0, y - alto / 2);
                 double endYV = Math.min(paneCarta.getHeight(), y + alto / 2);
 
-                Line lineaHorizontal = new Line(startXH, y, endXH, y);
-                Line lineaVertical = new Line(x, startYV, x, endYV);
+                Line horizontalLine = new Line(startXH, y, endXH, y);
+                Line verticalLine = new Line(x, startYV, x, endYV);
+                horizontalLine.setStroke(Color.RED);
+                verticalLine.setStroke(Color.RED);
+                horizontalLine.setStrokeWidth(2);
+                verticalLine.setStrokeWidth(2);
+                horizontalLine.setId("latlonLine");
+                verticalLine.setId("latlonLine");
 
-                lineaHorizontal.setStroke(Color.RED);
-                lineaVertical.setStroke(Color.RED);
-                lineaHorizontal.setStrokeWidth(2);
-                lineaVertical.setStrokeWidth(2);
-
-                lineaHorizontal.setId("latlonLine");
-                lineaVertical.setId("latlonLine");
-
-                Group latLonGroup = new Group(lineaHorizontal, lineaVertical);
+                Group latLonGroup = new Group(horizontalLine, verticalLine);
                 latLonGroup.setId("latlonGroup");
-
                 paneCarta.getChildren().add(latLonGroup);
             }
         });
     }
 
-    // â€”â€”â€” Utilidades UI â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
-    private void instalarTooltip(HBox hbox, String texto) {
-        Tooltip tooltip = new Tooltip(texto);
+    // ─────────────────────────────────────────────────────────────────────────
+    // UI utilities
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /** Attaches a long-lived tooltip to the given HBox toolbar item. */
+    private void instalarTooltip(HBox hbox, String text) {
+        Tooltip tooltip = new Tooltip(text);
         tooltip.setShowDuration(Duration.seconds(1000));
         tooltip.setStyle("-fx-background-color: white; -fx-text-fill: black; -fx-font-weight: normal;");
         Tooltip.install(hbox, tooltip);
     }
 
+    /**
+     * Configures the zoom slider and wraps the chart content in a {@link Group}
+     * so that scale transforms do not shift the scroll-pane viewport.
+     */
     private void setupZoom() {
         zoom_slider.setMin(0.2);
         zoom_slider.setMax(1.5);
         zoom_slider.setValue(0.75);
-
-        zoom_slider.valueProperty().addListener((obs, ov, nv) -> {
-            double zoomFactor = nv.doubleValue();
-            zoom(zoomFactor);
-        });
+        zoom_slider.valueProperty().addListener((obs, ov, nv) -> zoom(nv.doubleValue()));
 
         Group content = new Group();
         zoomGroup = new Group();
@@ -578,14 +594,24 @@ public class FXMLTrabajoController implements Initializable {
         map_scrollpane.setContent(content);
     }
 
-    private void zoom(double s) {
-        double h = map_scrollpane.getHvalue(), v = map_scrollpane.getVvalue();
-        zoomGroup.setScaleX(s);
-        zoomGroup.setScaleY(s);
+    /**
+     * Applies a uniform scale to the zoom group while preserving the scroll
+     * position.
+     */
+    private void zoom(double scale) {
+        double h = map_scrollpane.getHvalue();
+        double v = map_scrollpane.getVvalue();
+        zoomGroup.setScaleX(scale);
+        zoomGroup.setScaleY(scale);
         map_scrollpane.setHvalue(h);
         map_scrollpane.setVvalue(v);
     }
 
+    /**
+     * Wires all color-picker and text-field controls to their backing state
+     * variables.
+     * Text fields apply their value both on Enter and on focus-lost.
+     */
     private void setupControls() {
         colorPickkerPunto.setOnAction(e -> colorSeleccionado = colorPickkerPunto.getValue());
         colorPickerLinea.setOnAction(e -> colorLinea = colorPickerLinea.getValue());
@@ -609,7 +635,6 @@ public class FXMLTrabajoController implements Initializable {
                 }
             }
         });
-
         textFieldRadioArco.setOnAction(e -> {
             try {
                 radioFijo = Double.parseDouble(textFieldRadioArco.getText());
@@ -619,6 +644,11 @@ public class FXMLTrabajoController implements Initializable {
         });
     }
 
+    /**
+     * Registers the central mouse-click handler on the chart pane.
+     * Right-click always resets the active tool; left-click dispatches to the
+     * appropriate drawing or measurement handler based on {@link #currentTool}.
+     */
     private void setupPaneClickHandler() {
         paneCarta.setOnMouseClicked(evt -> {
             if (evt.getButton() == MouseButton.SECONDARY) {
@@ -627,7 +657,6 @@ public class FXMLTrabajoController implements Initializable {
             }
             if (!markingEnabled)
                 return;
-
             double x = evt.getX(), y = evt.getY();
 
             switch (currentTool) {
@@ -645,42 +674,35 @@ public class FXMLTrabajoController implements Initializable {
                 case DELETE -> {
                     Node n = (Node) evt.getTarget();
                     if (n instanceof Shape || n instanceof Text) {
-                        if (n.getParent() instanceof Group) {
+                        if (n.getParent() instanceof Group)
                             paneCarta.getChildren().remove(n.getParent());
-                        } else {
+                        else
                             paneCarta.getChildren().remove(n);
-                        }
                     }
                 }
 
                 case COMPASS -> measureCompass(x, y);
 
                 case RULER, REGLA_VISUAL -> {
-                    double clickX = evt.getX();
-                    double clickY = evt.getY();
-
+                    double clickX = evt.getX(), clickY = evt.getY();
                     if (ivRegla != null) {
                         paneCarta.getChildren().remove(ivRegla);
                         ivRegla = null;
                     }
 
-                    Image reglaImg = new Image(getClass().getResourceAsStream("/resources/regla123.png"));
-                    ivRegla = new ImageView(reglaImg);
-
-                    double escala = 1.0 / 6.0;
-                    ivRegla.setFitWidth(reglaImg.getWidth() * escala);
+                    Image rulerImg = new Image(getClass().getResourceAsStream("/resources/regla123.png"));
+                    ivRegla = new ImageView(rulerImg);
+                    ivRegla.setFitWidth(rulerImg.getWidth() * (1.0 / 6.0));
                     ivRegla.setPreserveRatio(true);
                     ivRegla.setOpacity(1.0);
                     ivRegla.setMouseTransparent(false);
                     ivRegla.setPickOnBounds(true);
-
                     paneCarta.getChildren().add(ivRegla);
 
                     Platform.runLater(() -> {
                         ivRegla.setLayoutX(clickX - ivRegla.getBoundsInLocal().getWidth() / 2);
                         ivRegla.setLayoutY(clickY - ivRegla.getBoundsInLocal().getHeight() / 2);
                     });
-
                     setupReglaDragHandlers(ivRegla, paneCarta);
                     openRotationWindowNormal();
                     resetModes();
@@ -693,18 +715,21 @@ public class FXMLTrabajoController implements Initializable {
                 }
 
                 case LATLON_MARKER -> resetModes();
-
                 default -> {
                 }
             }
         });
     }
 
-    // â€”â€”â€” Dibujo y helpers â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
+    // ─────────────────────────────────────────────────────────────────────────
+    // Drawing helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /** Draws the selected point symbol at the given canvas coordinates. */
     private void drawPoint(double x, double y) {
         switch (tipoPunto) {
             case "estrella" -> {
-                Text t = new Text(x - 6, y + 6, "â˜…");
+                Text t = new Text(x - 6, y + 6, "★");
                 t.setFill(colorSeleccionado);
                 t.setStyle("-fx-font-size: 15.4px;");
                 paneCarta.getChildren().add(t);
@@ -729,52 +754,42 @@ public class FXMLTrabajoController implements Initializable {
         }
     }
 
-    public void setProblem(Problem problem) {
-        this.currentProblem = problem;
-        mostrarEnunciado();
-    }
-
-    private void mostrarEnunciado() {
-        if (currentProblem != null && taProblem != null) {
-            taProblem.setText(currentProblem.getText());
-        }
-    }
-
+    /**
+     * Applies a blue tint to the tick labels of a slider for visual consistency.
+     * Must be called after CSS has been applied (e.g. inside
+     * {@link Platform#runLater}).
+     */
     public void colorearTickLabelsAzul(Slider slider) {
         slider.applyCss();
         for (Node node : slider.lookupAll(".tick-label")) {
-            if (node instanceof Text t) {
+            if (node instanceof Text t)
                 t.setFill(Color.web("#0d47a1"));
-            }
         }
     }
 
+    /**
+     * Two-phase line drawing: first click sets the start point and shows a live
+     * preview; second click finalises the line on the canvas.
+     */
     private void handleLineClick(MouseEvent evt) {
         double x = evt.getX(), y = evt.getY();
         if (!lineStarted) {
             lineStartX = x;
             lineStartY = y;
             lineStarted = true;
-
             Line line = new Line(lineStartX, lineStartY, x, y);
             line.setStroke(colorLinea);
             line.setStrokeWidth(grosorLinea);
-
             Line h1 = new Line(lineStartX - 5, lineStartY, lineStartX + 5, lineStartY);
             Line v1 = new Line(lineStartX, lineStartY - 5, lineStartX, lineStartY + 5);
-            h1.setStroke(colorLinea);
-            v1.setStroke(colorLinea);
-
             Line h2 = new Line(x - 5, y, x + 5, y);
             Line v2 = new Line(x, y - 5, x, y + 5);
-            h2.setStroke(colorLinea);
-            v2.setStroke(colorLinea);
-
+            for (Line l : List.of(h1, v1, h2, v2))
+                l.setStroke(colorLinea);
             previewLineGroup = new Group(line, h1, v1, h2, v2);
             paneCarta.getChildren().add(previewLineGroup);
-
-            lineDragHandler = moveEvt -> {
-                double ex = moveEvt.getX(), ey = moveEvt.getY();
+            lineDragHandler = mv -> {
+                double ex = mv.getX(), ey = mv.getY();
                 line.setEndX(ex);
                 line.setEndY(ey);
                 h2.setStartX(ex - 5);
@@ -794,9 +809,12 @@ public class FXMLTrabajoController implements Initializable {
         }
     }
 
+    /**
+     * Handles arc placement. Delegates to fixed-radius or free-radius sub-handler
+     * depending on {@link #modoArco}.
+     */
     private void handleArcClick(MouseEvent evt) {
         double x = evt.getX(), y = evt.getY();
-
         if (modoArco == ModoArco.RADIO_FIJO) {
             if (!arcStarted) {
                 arcCenterX = x;
@@ -808,23 +826,18 @@ public class FXMLTrabajoController implements Initializable {
                 } catch (NumberFormatException ex) {
                     textFieldRadioArco.setText(String.format("%.0f", radioFijo));
                 }
-
                 Arc arc = new Arc(arcCenterX, arcCenterY, radioFijo, radioFijo, 0, 180);
                 arc.setType(ArcType.OPEN);
                 arc.setStroke(colorArco);
                 arc.setStrokeWidth(grosorArco);
                 arc.setFill(Color.TRANSPARENT);
-
                 Line h1 = new Line(arcCenterX + radioFijo - 5, arcCenterY, arcCenterX + radioFijo + 5, arcCenterY);
                 Line v1 = new Line(arcCenterX + radioFijo, arcCenterY - 5, arcCenterX + radioFijo, arcCenterY + 5);
                 Line h2 = new Line(arcCenterX - radioFijo - 5, arcCenterY, arcCenterX - radioFijo + 5, arcCenterY);
                 Line v2 = new Line(arcCenterX - radioFijo, arcCenterY - 5, arcCenterX - radioFijo, arcCenterY + 5);
-                for (Line cruz : List.of(h1, v1, h2, v2))
-                    cruz.setStroke(colorArco);
-
-                Group g = new Group(arc, h1, v1, h2, v2);
-                paneCarta.getChildren().add(g);
-
+                for (Line cross : List.of(h1, v1, h2, v2))
+                    cross.setStroke(colorArco);
+                paneCarta.getChildren().add(new Group(arc, h1, v1, h2, v2));
                 arcStarted = false;
                 resetModes();
             }
@@ -833,66 +846,54 @@ public class FXMLTrabajoController implements Initializable {
         }
     }
 
+    /**
+     * Free-radius arc: first click sets centre; mouse movement previews radius;
+     * second click commits the arc to the canvas.
+     */
     private void handleArcLibre(MouseEvent evt) {
         double x = evt.getX(), y = evt.getY();
-
         if (!arcStarted) {
             arcCenterX = x;
             arcCenterY = y;
             arcStarted = true;
-
             previewArc = new Arc(arcCenterX, arcCenterY, 1, 1, 0, 180);
             previewArc.setType(ArcType.OPEN);
             previewArc.setStroke(colorArco);
             previewArc.setStrokeWidth(grosorArco);
             previewArc.setFill(Color.TRANSPARENT);
-
-            Line h1 = new Line(), v1 = new Line();
-            Line h2 = new Line(), v2 = new Line();
+            Line h1 = new Line(), v1 = new Line(), h2 = new Line(), v2 = new Line();
             for (Line l : List.of(h1, v1, h2, v2))
                 l.setStroke(colorArco);
-
             previewArcGroup = new Group(previewArc, h1, v1, h2, v2);
             paneCarta.getChildren().add(previewArcGroup);
-
-            arcDragHandler = moveEvt -> {
-                double ex = moveEvt.getX(), ey = moveEvt.getY();
+            arcDragHandler = mv -> {
+                double ex = mv.getX(), ey = mv.getY();
                 double r = Math.hypot(ex - arcCenterX, ey - arcCenterY);
-
-                double maxRadiusX = Math.min(arcCenterX, paneCarta.getWidth() - arcCenterX);
-                double maxRadiusY = Math.min(arcCenterY, paneCarta.getHeight() - arcCenterY);
-                double maxRadius = Math.min(maxRadiusX, maxRadiusY);
-                if (r > maxRadius)
-                    r = maxRadius;
-
+                double maxR = Math.min(Math.min(arcCenterX, paneCarta.getWidth() - arcCenterX),
+                        Math.min(arcCenterY, paneCarta.getHeight() - arcCenterY));
+                if (r > maxR)
+                    r = maxR;
                 previewArc.setRadiusX(r);
                 previewArc.setRadiusY(r);
-
-                double rightX = arcCenterX + r;
-                double leftX = arcCenterX - r;
-                double y0 = arcCenterY;
-
-                h1.setStartX(rightX - 5);
-                h1.setEndX(rightX + 5);
-                h1.setStartY(y0);
-                h1.setEndY(y0);
-                v1.setStartX(rightX);
-                v1.setEndX(rightX);
-                v1.setStartY(y0 - 5);
-                v1.setEndY(y0 + 5);
-
-                h2.setStartX(leftX - 5);
-                h2.setEndX(leftX + 5);
-                h2.setStartY(y0);
-                h2.setEndY(y0);
-                v2.setStartX(leftX);
-                v2.setEndX(leftX);
-                v2.setStartY(y0 - 5);
-                v2.setEndY(y0 + 5);
+                double rx = arcCenterX + r, lx = arcCenterX - r, cy = arcCenterY;
+                h1.setStartX(rx - 5);
+                h1.setEndX(rx + 5);
+                h1.setStartY(cy);
+                h1.setEndY(cy);
+                v1.setStartX(rx);
+                v1.setEndX(rx);
+                v1.setStartY(cy - 5);
+                v1.setEndY(cy + 5);
+                h2.setStartX(lx - 5);
+                h2.setEndX(lx + 5);
+                h2.setStartY(cy);
+                h2.setEndY(cy);
+                v2.setStartX(lx);
+                v2.setEndX(lx);
+                v2.setStartY(cy - 5);
+                v2.setEndY(cy + 5);
             };
-
             paneCarta.addEventFilter(MouseEvent.MOUSE_MOVED, arcDragHandler);
-
         } else {
             paneCarta.removeEventFilter(MouseEvent.MOUSE_MOVED, arcDragHandler);
             arcStarted = false;
@@ -902,42 +903,51 @@ public class FXMLTrabajoController implements Initializable {
         }
     }
 
+    /** Makes a {@link Text} node draggable within the chart pane. */
     private void makeDraggable(Text txt) {
-        final double[] d = new double[2];
+        final double[] offset = new double[2];
         txt.setOnMousePressed(e -> {
             Point2D loc = paneCarta.sceneToLocal(e.getSceneX(), e.getSceneY());
-            d[0] = loc.getX() - txt.getX();
-            d[1] = loc.getY() - txt.getY();
+            offset[0] = loc.getX() - txt.getX();
+            offset[1] = loc.getY() - txt.getY();
             e.consume();
         });
         txt.setOnMouseDragged(e -> {
             Point2D loc = paneCarta.sceneToLocal(e.getSceneX(), e.getSceneY());
-            txt.setX(loc.getX() - d[0]);
-            txt.setY(loc.getY() - d[1]);
+            txt.setX(loc.getX() - offset[0]);
+            txt.setY(loc.getY() - offset[1]);
             e.consume();
         });
     }
 
+    /**
+     * Converts a source image into a chart overlay by making near-white/transparent
+     * pixels fully transparent while preserving all other pixels at full opacity.
+     *
+     * @param src the source image (e.g. a scanned protractor)
+     * @return a new image ready to be placed over the chart
+     */
     private Image makeOverlayPreserveGray(Image src) {
-        int w = (int) src.getWidth();
-        int h = (int) src.getHeight();
+        int w = (int) src.getWidth(), h = (int) src.getHeight();
         javafx.scene.image.WritableImage dst = new javafx.scene.image.WritableImage(w, h);
         javafx.scene.image.PixelReader pr = src.getPixelReader();
         javafx.scene.image.PixelWriter pw = dst.getPixelWriter();
-
-        for (int y = 0; y < h; y++) {
-            for (int x = 0; x < w; x++) {
-                Color c = pr.getColor(x, y);
-                if (c.getOpacity() > 0.02 && c.getBrightness() < 0.95) {
-                    pw.setColor(x, y, new Color(c.getRed(), c.getGreen(), c.getBlue(), 1.0));
-                } else {
-                    pw.setColor(x, y, Color.TRANSPARENT);
-                }
+        for (int row = 0; row < h; row++) {
+            for (int col = 0; col < w; col++) {
+                Color c = pr.getColor(col, row);
+                pw.setColor(col, row,
+                        (c.getOpacity() > 0.02 && c.getBrightness() < 0.95)
+                                ? new Color(c.getRed(), c.getGreen(), c.getBlue(), 1.0)
+                                : Color.TRANSPARENT);
             }
         }
         return dst;
     }
 
+    /**
+     * Places the pending text annotation at the clicked position and resets the
+     * tool.
+     */
     private void handleTextClick(double x, double y) {
         if (textoPendiente != null) {
             Text txt = new Text(x, y, textoPendiente);
@@ -950,14 +960,157 @@ public class FXMLTrabajoController implements Initializable {
         resetModes();
     }
 
-    private String toRgbString(Color c) {
-        int r = (int) (c.getRed() * 255);
-        int g = (int) (c.getGreen() * 255);
-        int b = (int) (c.getBlue() * 255);
-        return String.format("rgb(%d,%d,%d)", r, g, b);
+    /**
+     * Applies a new colour to the given node or to every child of a {@link Group}.
+     * Arc nodes retain a transparent fill so only the stroke is recoloured.
+     *
+     * @param node  the target node (may be a Group)
+     * @param color the colour to apply
+     */
+    private void applyColor(Node node, Color color) {
+        if (node.getParent() instanceof Group group) {
+            for (Node child : group.getChildren()) {
+                if (child instanceof Arc arc) {
+                    arc.setStroke(color);
+                    arc.setFill(Color.TRANSPARENT);
+                } else if (child instanceof Shape s) {
+                    s.setStroke(color);
+                    s.setFill(color);
+                } else if (child instanceof Text t) {
+                    t.setFill(color);
+                }
+            }
+        } else {
+            if (node instanceof Arc arc) {
+                arc.setStroke(color);
+                arc.setFill(Color.TRANSPARENT);
+            } else if (node instanceof Shape s) {
+                s.setStroke(color);
+                s.setFill(color);
+            } else if (node instanceof Text t) {
+                t.setFill(color);
+            }
+        }
     }
 
-    // â€”â€”â€” Handlers @FXML â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”
+    /**
+     * Two-phase compass measurement: first click records point A; second click
+     * draws the line and labels it with the pixel distance.
+     */
+    private void measureCompass(double x, double y) {
+        if (compasP1 == null) {
+            compasP1 = new Point2D(x, y);
+        } else {
+            compasP2 = new Point2D(x, y);
+            double dist = compasP1.distance(compasP2);
+            Line line = new Line(compasP1.getX(), compasP1.getY(), compasP2.getX(), compasP2.getY());
+            paneCarta.getChildren().add(line);
+            Text label = new Text((compasP1.getX() + compasP2.getX()) / 2,
+                    (compasP1.getY() + compasP2.getY()) / 2,
+                    String.format("%.1f", dist));
+            makeDraggable(label);
+            paneCarta.getChildren().add(label);
+            compasP1 = compasP2 = null;
+        }
+    }
+
+    /**
+     * Opens (or brings to front) the ruler rotation floating window.
+     * The window is always-on-top so it remains accessible while drawing.
+     */
+    private void openRotationWindowNormal() {
+        try {
+            if (rotationStage == null || !rotationStage.isShowing()) {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/vista/RotarRegla.fxml"));
+                Parent root = loader.load();
+                rotationStage = new Stage();
+                rotationStage.setTitle("Rotar Regla");
+                rotationStage.setScene(new Scene(root));
+                rotationStage.setAlwaysOnTop(true);
+                rotationStage.initOwner(paneCarta.getScene().getWindow());
+                RotarReglaController rotCtrl = loader.getController();
+                rotCtrl.setRuleImageView(ivRegla);
+                rotationStage.show();
+            } else {
+                rotationStage.toFront();
+            }
+        } catch (IOException e) {
+            Logger.getLogger(FXMLTrabajoController.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    /**
+     * Attaches drag handlers to a ruler ImageView so the user can reposition it
+     * freely inside the chart pane. Right-click release hides the ruler.
+     *
+     * @param rulerView the ruler ImageView to make draggable
+     * @param chartPane the parent pane defining the drag boundary
+     */
+    public void setupReglaDragHandlers(ImageView rulerView, Pane chartPane) {
+        rulerView.setOnMousePressed(ev -> {
+            Point2D mouse = chartPane.sceneToLocal(ev.getSceneX(), ev.getSceneY());
+            dragDelta.x = mouse.getX() - rulerView.getLayoutX();
+            dragDelta.y = mouse.getY() - rulerView.getLayoutY();
+            ev.consume();
+        });
+        rulerView.setOnMouseDragged(ev -> {
+            Point2D mouse = chartPane.sceneToLocal(ev.getSceneX(), ev.getSceneY());
+            double cx = mouse.getX() - dragDelta.x;
+            double cy = mouse.getY() - dragDelta.y;
+            rulerView.setLayoutX(cx);
+            rulerView.setLayoutY(cy);
+            Bounds b = rulerView.getBoundsInParent();
+            if (b.getMinX() < 0)
+                cx += (0 - b.getMinX());
+            if (b.getMinY() < 0)
+                cy += (0 - b.getMinY());
+            if (b.getMaxX() > chartPane.getWidth())
+                cx -= (b.getMaxX() - chartPane.getWidth());
+            if (b.getMaxY() > chartPane.getHeight())
+                cy -= (b.getMaxY() - chartPane.getHeight());
+            rulerView.setLayoutX(cx);
+            rulerView.setLayoutY(cy);
+            ev.consume();
+        });
+        rulerView.setOnMouseReleased(ev -> {
+            if (ev.getButton() == MouseButton.SECONDARY) {
+                rulerView.setVisible(false);
+                resetModes();
+                markingEnabled = false;
+                currentTool = Tool.NONE;
+                ev.consume();
+            }
+        });
+    }
+
+    /**
+     * Temporarily moves a node to a candidate position to read its bounds in
+     * parent,
+     * then restores it. Used for boundary-clamping calculations during drag events.
+     */
+    private Bounds getBoundsAt(Node node, double layoutX, double layoutY) {
+        double oldX = node.getLayoutX(), oldY = node.getLayoutY();
+        node.setLayoutX(layoutX);
+        node.setLayoutY(layoutY);
+        Bounds bounds = node.getBoundsInParent();
+        node.setLayoutX(oldX);
+        node.setLayoutY(oldY);
+        return bounds;
+    }
+
+    /** Resets all active-tool state back to the idle (no-operation) mode. */
+    private void resetModes() {
+        currentTool = Tool.NONE;
+        markingEnabled = false;
+        lineStarted = false;
+        arcStarted = false;
+        compasP1 = compasP2 = rulerP1 = rulerP2 = null;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // @FXML event handlers
+    // ─────────────────────────────────────────────────────────────────────────
+
     @FXML
     public void seleccionarLatLonMarker(ActionEvent e) {
         resetModes();
@@ -965,18 +1118,20 @@ public class FXMLTrabajoController implements Initializable {
         currentTool = Tool.LATLON_MARKER;
     }
 
+    /**
+     * Closes the current session by opening the session-end dialog to persist
+     * stats.
+     */
     @FXML
     private void onCerrarAplicacion(ActionEvent event) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/vista/VentanaCerrarSesion.fxml"));
         Parent root = loader.load();
-
         CerrarSesionController ctrl = loader.getController();
         ctrl.initSesion(hits, faults);
         ctrl.initUser(user, nick, email, pass, avatar, birthday);
-
         Stage stage = new Stage();
         stage.setScene(new Scene(root));
-        stage.setTitle("Cerrar SesiÃ³n");
+        stage.setTitle("Cerrar Sesión");
         stage.getIcons().add(new Image(getClass().getResourceAsStream("/resources/logo1.png")));
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.setMinWidth(500);
@@ -986,63 +1141,59 @@ public class FXMLTrabajoController implements Initializable {
 
     @FXML
     private void showPosition(MouseEvent event) {
+        // Reserved for future coordinate-display implementation.
     }
 
+    /** Aggregates all session hits and faults and opens the statistics window. */
     @FXML
     private void onEstadisticas(ActionEvent event) throws IOException {
-        int totalAciertos = 0;
-        int totalFallos = 0;
-
+        int totalHits = 0, totalFaults = 0;
         listSesions = user.getSessions();
-        for (int i = 0; i < listSesions.size(); i++) {
-            totalAciertos += listSesions.get(i).getHits();
-            totalFallos += listSesions.get(i).getFaults();
+        for (model.Session s : listSesions) {
+            totalHits += s.getHits();
+            totalFaults += s.getFaults();
         }
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/vista/Estadisticas.fxml"));
         Parent root = loader.load();
-        EstadisticasController controlador2 = loader.getController();
-        controlador2.initUser(nick, email, pass, avatar, birthday);
-        controlador2.initEstadisticas(totalAciertos, totalFallos);
+        EstadisticasController statsCtrl = loader.getController();
+        statsCtrl.initUser(nick, email, pass, avatar, birthday);
+        statsCtrl.initEstadisticas(totalHits, totalFaults);
 
-        Scene scene = new Scene(root, 650, 500);
         Stage stage = new Stage();
         stage.getIcons().add(new Image(getClass().getResourceAsStream("/resources/logo1.png")));
-        stage.setScene(scene);
-        stage.setTitle("EstadÃ­sticas");
+        stage.setScene(new Scene(root, 650, 500));
+        stage.setTitle("Estadísticas");
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.setMinWidth(660);
         stage.setMinHeight(400);
         stage.show();
     }
 
+    /** Opens the problem picker dialog and loads the confirmed selection. */
     @FXML
     private void elegirProblemaOnAction(ActionEvent event) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/vista/ElegirProblema.fxml"));
         Parent root = loader.load();
-        ElegirProblemaController controlador2 = loader.getController();
+        ElegirProblemaController problemCtrl = loader.getController();
 
-        Scene scene = new Scene(root, 700, 370);
         Stage stage = new Stage();
         stage.getIcons().add(new Image(getClass().getResourceAsStream("/resources/logo1.png")));
-        stage.setScene(scene);
+        stage.setScene(new Scene(root, 700, 370));
         stage.setTitle("Elegir Problema");
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.setMinWidth(600);
         stage.setMinHeight(300);
-
         stage.showAndWait();
 
-        if (controlador2.pulsadoProblema()) {
-            problema = controlador2.getProblem();
-            taProblem.setText(problema.getText());
+        if (problemCtrl.isProblemSelected()) { // ← renamed call-site
+            problema = problemCtrl.getProblem();
             listAnswers = problema.getAnswers();
-
+            taProblem.setText(problema.getText());
             buttonA.setText(listAnswers.get(0).getText());
             buttonB.setText(listAnswers.get(1).getText());
             buttonC.setText(listAnswers.get(2).getText());
             buttonD.setText(listAnswers.get(3).getText());
-
             buttonA.setVisible(true);
             buttonB.setVisible(true);
             buttonC.setVisible(true);
@@ -1051,53 +1202,49 @@ public class FXMLTrabajoController implements Initializable {
         buttonTerminarProblema.setDisable(false);
     }
 
+    /**
+     * Evaluates the chosen answer, updates hit/fault counters, and signals the
+     * result.
+     */
     @FXML
     private void terminarProblemaOnAction(ActionEvent event) {
-        RadioButton seleccionado = (grupoRespuestas.getSelectedToggle() instanceof RadioButton rb) ? rb : null;
-
+        RadioButton selected = (grupoRespuestas.getSelectedToggle() instanceof RadioButton rb) ? rb : null;
         listAnswers = problema.getAnswers();
 
-        if (seleccionado != null) {
-            String textoSeleccionado = seleccionado.getText();
-            int opcionSeleccionada = -1;
-
+        if (selected != null) {
+            String selectedText = selected.getText();
+            int selectedIndex = -1;
             for (int i = 0; i < listAnswers.size(); i++) {
-                if (listAnswers.get(i).getText().equals(textoSeleccionado)) {
-                    opcionSeleccionada = i;
+                if (listAnswers.get(i).getText().equals(selectedText)) {
+                    selectedIndex = i;
                     break;
                 }
             }
-
-            if (opcionSeleccionada != -1) {
-                boolean esCorrecta = listAnswers.get(opcionSeleccionada).getValidity();
-
-                if (esCorrecta) {
+            if (selectedIndex != -1) {
+                boolean correct = listAnswers.get(selectedIndex).getValidity();
+                if (correct) {
                     taProblem.setText("");
                     buttonA.setVisible(false);
                     buttonB.setVisible(false);
                     buttonC.setVisible(false);
                     buttonD.setVisible(false);
-
                     hits++;
                     listAnswers = null;
-
-                    Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-                    alerta.setTitle("Respuesta");
-                    alerta.setHeaderText("ACIERTO!");
-                    alerta.setContentText("Pulsa aceptar para continuar haciendo ejercicios");
-                    alerta.show();
+                    Alert a = new Alert(Alert.AlertType.INFORMATION);
+                    a.setTitle("Respuesta");
+                    a.setHeaderText("ACIERTO!");
+                    a.setContentText("Pulsa aceptar para continuar haciendo ejercicios");
+                    a.show();
                 } else {
                     faults++;
                 }
-            } else {
-                System.out.println("Respuesta seleccionada no encontrada en la lista");
             }
         } else {
-            Alert alerta = new Alert(Alert.AlertType.ERROR);
-            alerta.setTitle("Advertencia");
-            alerta.setHeaderText("Â¡Error!");
-            alerta.setContentText("No has seleccionado nignuna respuesta");
-            alerta.show();
+            Alert a = new Alert(Alert.AlertType.ERROR);
+            a.setTitle("Advertencia");
+            a.setHeaderText("¡Error!");
+            a.setContentText("No has seleccionado ninguna respuesta");
+            a.show();
         }
     }
 
@@ -1204,6 +1351,10 @@ public class FXMLTrabajoController implements Initializable {
         ivOverlay.setVisible(true);
     }
 
+    /**
+     * Opens the profile edit dialog; refreshes the avatar image on a confirmed
+     * save.
+     */
     @FXML
     public void onEditarPerfil(ActionEvent e) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/vista/PerfilPanel.fxml"));
@@ -1214,32 +1365,31 @@ public class FXMLTrabajoController implements Initializable {
         dialog.initOwner(paneCarta.getScene().getWindow());
         dialog.initModality(Modality.APPLICATION_MODAL);
 
-        PerfilPanelController controlador2 = loader.getController();
-        controlador2.initUser(nick, email, pass, avatar, birthday);
-        controlador2.mostrarinfo(nick, email, pass, avatar, birthday);
+        PerfilPanelController profileCtrl = loader.getController();
+        profileCtrl.initUser(nick, email, pass, avatar, birthday);
+        profileCtrl.populateFields(nick, email, pass, avatar, birthday); // ← renamed call-site
 
         dialog.setScene(new Scene(root));
         dialog.setMinWidth(500);
         dialog.setMinHeight(400);
         dialog.showAndWait();
 
-        if (controlador2.pulsadoGuardar()) {
-            User us = controlador2.getUser();
-            Image res = us.getAvatar();
-            user = us;
-            ivPerfil.setImage(res);
+        if (profileCtrl.isSaveConfirmed()) { // ← renamed call-site
+            User updatedUser = profileCtrl.getUser();
+            user = updatedUser;
+            ivPerfil.setImage(updatedUser.getAvatar());
         }
     }
 
+    /** Prompts for text input then activates the annotation-placement tool. */
     @FXML
     public void seleccionarAnotarTexto(ActionEvent e) {
         TextInputDialog dlg = new TextInputDialog();
         dlg.setTitle("Anotar texto");
         dlg.setHeaderText("Introduce el texto:");
-        dlg.getEditor().setPromptText("Tu texto aquÃ­");
-
-        Optional<String> res = dlg.showAndWait();
-        res.ifPresent(s -> {
+        dlg.getEditor().setPromptText("Tu texto aquí");
+        Optional<String> result = dlg.showAndWait();
+        result.ifPresent(s -> {
             textoPendiente = s;
             resetModes();
             markingEnabled = true;
@@ -1247,58 +1397,31 @@ public class FXMLTrabajoController implements Initializable {
         });
     }
 
-    private void listClicked(MouseEvent e) {
-        Poi poi = map_listview.getSelectionModel().getSelectedItem();
-        if (poi == null)
-            return;
-
-        double contentWidth = zoomGroup.getBoundsInLocal().getWidth() * zoom_slider.getValue();
-        double contentHeight = zoomGroup.getBoundsInLocal().getHeight() * zoom_slider.getValue();
-        double viewportW = map_scrollpane.getViewportBounds().getWidth();
-        double viewportH = map_scrollpane.getViewportBounds().getHeight();
-
-        double h = (poi.getX() * zoom_slider.getValue() - viewportW / 2) / (contentWidth - viewportW);
-        double v = (poi.getY() * zoom_slider.getValue() - viewportH / 2) / (contentHeight - viewportH);
-
-        h = Math.max(0, Math.min(1, h));
-        v = Math.max(0, Math.min(1, v));
-
-        map_scrollpane.setHvalue(h);
-        map_scrollpane.setVvalue(v);
-    }
-
+    /** Adds a new POI at the Ctrl-clicked chart position via an input dialog. */
     @FXML
     private void addPoi(MouseEvent e) {
         if (!e.isControlDown())
             return;
-
         Dialog<Poi> dlg = new Dialog<>();
         dlg.setTitle("Nuevo POI");
         dlg.setHeaderText("Introduce un nuevo POI");
-
         Stage ds = (Stage) dlg.getDialogPane().getScene().getWindow();
         ds.getIcons().add(new Image(getClass().getResourceAsStream("/resources/logo.png")));
-
         ButtonType ok = new ButtonType("Aceptar", ButtonBar.ButtonData.OK_DONE);
         dlg.getDialogPane().getButtonTypes().addAll(ok, ButtonType.CANCEL);
-
-        TextField name = new TextField();
-        name.setPromptText("Nombre del POI");
-        TextArea desc = new TextArea();
-        desc.setPromptText("DescripciÃ³n...");
-        desc.setWrapText(true);
-        desc.setPrefRowCount(5);
-
+        TextField nameField = new TextField();
+        nameField.setPromptText("Nombre del POI");
+        TextArea descArea = new TextArea();
+        descArea.setPromptText("Descripción...");
+        descArea.setWrapText(true);
+        descArea.setPrefRowCount(5);
         dlg.getDialogPane().setContent(new javafx.scene.layout.VBox(10,
-                new Label("Nombre:"), name,
-                new Label("DescripciÃ³n:"), desc));
-
-        dlg.setResultConverter(btn -> btn == ok ? new Poi(name.getText().trim(), desc.getText().trim(), 0, 0) : null);
-
-        Optional<Poi> res = dlg.showAndWait();
-        res.ifPresent(poi -> {
-            Point2D lp = zoomGroup.sceneToLocal(e.getSceneX(), e.getSceneY());
-            poi.setPosition(lp);
+                new Label("Nombre:"), nameField, new Label("Descripción:"), descArea));
+        dlg.setResultConverter(
+                btn -> btn == ok ? new Poi(nameField.getText().trim(), descArea.getText().trim(), 0, 0) : null);
+        Optional<Poi> result = dlg.showAndWait();
+        result.ifPresent(poi -> {
+            poi.setPosition(zoomGroup.sceneToLocal(e.getSceneX(), e.getSceneY()));
             map_listview.getItems().add(poi);
         });
     }
@@ -1339,8 +1462,8 @@ public class FXMLTrabajoController implements Initializable {
         alert.setWidth(600);
         alert.setHeight(600);
         alert.setContentText(
-                "Al iniciar un elemento click izquierdo para aÃ±adir ese elemento y click derecho para cancelar.\n" +
-                        "Si no se realiza un problema y se cierra sesiÃ³n las estadÃ­sticas no se actualizarÃ¡n.");
+                "Al iniciar un elemento click izquierdo para añadir ese elemento y click derecho para cancelar.\n" +
+                        "Si no se realiza un problema y se cierra sesión las estadísticas no se actualizarán.");
         alert.show();
     }
 
@@ -1354,14 +1477,6 @@ public class FXMLTrabajoController implements Initializable {
         zoom_slider.setValue(zoom_slider.getValue() - 0.1);
     }
 
-    private void resetModes() {
-        currentTool = Tool.NONE;
-        markingEnabled = false;
-        lineStarted = false;
-        arcStarted = false;
-        compasP1 = compasP2 = rulerP1 = rulerP2 = null;
-    }
-
     @FXML
     public void seleccionarArcoRadioFijo(ActionEvent e) {
         modoArco = ModoArco.RADIO_FIJO;
@@ -1373,154 +1488,4 @@ public class FXMLTrabajoController implements Initializable {
         modoArco = ModoArco.RADIO_LIBRE;
         seleccionarTrazarArco(e);
     }
-
-    private void openRotationWindowNormal() {
-        try {
-            if (rotationStage == null || !rotationStage.isShowing()) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/vista/RotarRegla.fxml"));
-                Parent root = loader.load();
-
-                rotationStage = new Stage();
-                rotationStage.setTitle("Rotar Regla");
-                rotationStage.setScene(new Scene(root));
-                rotationStage.setAlwaysOnTop(true);
-                rotationStage.initOwner(paneCarta.getScene().getWindow());
-
-                RotarReglaController rotationController = loader.getController();
-                rotationController.setRuleImageView(ivRegla);
-
-                rotationStage.show();
-            } else {
-                rotationStage.toFront();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setupReglaDragHandlers(ImageView ivRegla, Pane paneCarta) {
-        ivRegla.setOnMousePressed(event -> {
-            Point2D mouse = paneCarta.sceneToLocal(event.getSceneX(), event.getSceneY());
-            dragDelta.x = mouse.getX() - ivRegla.getLayoutX();
-            dragDelta.y = mouse.getY() - ivRegla.getLayoutY();
-            event.consume();
-        });
-
-        ivRegla.setOnMouseDragged(event -> {
-            Point2D mouse = paneCarta.sceneToLocal(event.getSceneX(), event.getSceneY());
-            double candidateX = mouse.getX() - dragDelta.x;
-            double candidateY = mouse.getY() - dragDelta.y;
-
-            ivRegla.setLayoutX(candidateX);
-            ivRegla.setLayoutY(candidateY);
-
-            Bounds bounds = ivRegla.getBoundsInParent();
-
-            double limitedX = candidateX;
-            double limitedY = candidateY;
-
-            if (bounds.getMinX() < 0)
-                limitedX += (0 - bounds.getMinX());
-            if (bounds.getMinY() < 0)
-                limitedY += (0 - bounds.getMinY());
-            if (bounds.getMaxX() > paneCarta.getWidth())
-                limitedX -= (bounds.getMaxX() - paneCarta.getWidth());
-            if (bounds.getMaxY() > paneCarta.getHeight())
-                limitedY -= (bounds.getMaxY() - paneCarta.getHeight());
-
-            ivRegla.setLayoutX(limitedX);
-            ivRegla.setLayoutY(limitedY);
-
-            event.consume();
-        });
-
-        ivRegla.setOnMouseReleased(event -> {
-            if (event.getButton() == MouseButton.SECONDARY) {
-                ivRegla.setVisible(false);
-                resetModes();
-                markingEnabled = false;
-                currentTool = Tool.NONE;
-                event.consume();
-            }
-        });
-    }
-
-    private Bounds getBoundsAt(Node node, double layoutX, double layoutY) {
-        double oldX = node.getLayoutX();
-        double oldY = node.getLayoutY();
-        node.setLayoutX(layoutX);
-        node.setLayoutY(layoutY);
-        Bounds bounds = node.getBoundsInParent();
-        node.setLayoutX(oldX);
-        node.setLayoutY(oldY);
-        return bounds;
-    }
-
-    private void applyColor(Node n, Color c) {
-        if (n.getParent() instanceof Group g) {
-            for (Node hijo : g.getChildren()) {
-                if (hijo instanceof Arc arc) {
-                    arc.setStroke(c);
-                    arc.setFill(Color.TRANSPARENT);
-                } else if (hijo instanceof Shape s) {
-                    s.setStroke(c);
-                    s.setFill(c);
-                } else if (hijo instanceof Text t) {
-                    t.setFill(c);
-                }
-            }
-        } else {
-            if (n instanceof Arc arc) {
-                arc.setStroke(c);
-                arc.setFill(Color.TRANSPARENT);
-            } else if (n instanceof Shape s) {
-                s.setStroke(c);
-                s.setFill(c);
-            } else if (n instanceof Text t) {
-                t.setFill(c);
-            }
-        }
-    }
-
-    private void measureCompass(double x, double y) {
-        if (compasP1 == null) {
-            compasP1 = new Point2D(x, y);
-        } else {
-            compasP2 = new Point2D(x, y);
-            double d = compasP1.distance(compasP2);
-            Line l = new Line(compasP1.getX(), compasP1.getY(), compasP2.getX(), compasP2.getY());
-            paneCarta.getChildren().add(l);
-            Text t = new Text((compasP1.getX() + compasP2.getX()) / 2, (compasP1.getY() + compasP2.getY()) / 2,
-                    String.format("%.1f", d));
-            makeDraggable(t);
-            paneCarta.getChildren().add(t);
-            compasP1 = compasP2 = null;
-        }
-    }
-
-    private void colocarRegla(double x, double y) {
-        if (ivRegla != null && paneCarta.getChildren().contains(ivRegla)) {
-            paneCarta.getChildren().remove(ivRegla);
-        }
-        Image reglaImg = new Image(getClass().getResourceAsStream("/resources/regla123.png"));
-        ivRegla = new ImageView(reglaImg);
-        ivRegla.setOpacity(0.85);
-        ivRegla.setScaleX(0.8);
-        ivRegla.setScaleY(0.8);
-        ivRegla.setMouseTransparent(false);
-        ivRegla.setPickOnBounds(true);
-        ivRegla.setLayoutX(x - ivRegla.getBoundsInLocal().getWidth() / 2);
-        ivRegla.setLayoutY(y - ivRegla.getBoundsInLocal().getHeight() / 2);
-        paneCarta.getChildren().add(ivRegla);
-        setupReglaDragHandlers(ivRegla, paneCarta);
-    }
-
-    private void cerrarAplicacion(ActionEvent event) {
-        if (rotationStage != null)
-            rotationStage.close();
-        Stage mainStage = (Stage) paneCarta.getScene().getWindow();
-        mainStage.close();
-    }
 }
-
-
