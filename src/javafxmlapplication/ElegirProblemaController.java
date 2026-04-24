@@ -1,4 +1,4 @@
-﻿package javafxmlapplication;
+package javafxmlapplication;
 
 import java.net.URL;
 import java.sql.SQLException;

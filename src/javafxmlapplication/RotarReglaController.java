@@ -1,4 +1,4 @@
-﻿package javafxmlapplication;
+package javafxmlapplication;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -61,7 +61,7 @@ public class RotarReglaController {
 
         rotationSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             double rotationDegrees = newValue.doubleValue();
-            rotationLabel.setText(String.format("%.2f°", rotationDegrees));
+            rotationLabel.setText(String.format("%.2fÃ‚Â°", rotationDegrees));
             ruleImageView.setRotate(rotationDegrees);
         });
     }

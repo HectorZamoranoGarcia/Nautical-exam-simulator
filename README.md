@@ -81,12 +81,22 @@ data.db                    # Persistent user and session data
 
 Open the project in NetBeans and select Run → Run Project (F6). The Ant build script handles classpath resolution for the bundled JARs automatically.
 
-Alternatively, from the project root:
+Alternatively, from the project root using Ant:
 
 ```bash
 ant clean jar
 java -jar dist/PoiUPVApp.jar
 ```
+
+#### Running without an IDE (Windows)
+
+If you don't have NetBeans or Ant installed, a PowerShell script is included to automatically compile and launch the project:
+
+```powershell
+.\build_and_run.ps1
+```
+
+*Note: This script requires `javac` and `java` to be available in your system's PATH, and you may need to update the `$JAVAFX_LIB` path inside the script to match your local JavaFX SDK installation.*
 
 ### First launch
 

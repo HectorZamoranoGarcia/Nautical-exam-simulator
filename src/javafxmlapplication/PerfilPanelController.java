@@ -1,4 +1,4 @@
-﻿package javafxmlapplication;
+package javafxmlapplication;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -121,7 +121,7 @@ public class PerfilPanelController implements Initializable {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Selecciona un avatar");
         chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Imágenes", "*.png", "*.jpg", "*.jpeg"));
+                new FileChooser.ExtensionFilter("ImÃƒÂ¡genes", "*.png", "*.jpg", "*.jpeg"));
         Window win = ivDialogIcon.getScene().getWindow();
         java.io.File file = chooser.showOpenDialog(win);
         if (file != null) {
@@ -134,7 +134,7 @@ public class PerfilPanelController implements Initializable {
     void onGuardar() throws NavDAOException {
         user = nav.authenticate(nick, pass);
         if (pfContrasena.getText().length() < 8) {
-            showError("La contraseña debe tener al menos 8 caracteres.");
+            showError("La contraseÃƒÂ±a debe tener al menos 8 caracteres.");
             return;
         } else {
             user.setPassword(pfContrasena.getText());
@@ -144,7 +144,7 @@ public class PerfilPanelController implements Initializable {
             saveConfirmed = true;
         }
         ivDialogIcon.getScene().getWindow().hide();
-        showInfo("Cambios guardados, para su visualización debe reiniciar el programa.");
+        showInfo("Cambios guardados, para su visualizaciÃƒÂ³n debe reiniciar el programa.");
     }
 
     /** Discards any changes and closes the dialog. */

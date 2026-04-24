@@ -1,4 +1,4 @@
-﻿package poiupv;
+package poiupv;
 
 import javafx.geometry.Point2D;
 
@@ -75,6 +75,6 @@ public class Poi {
 
     @Override
     public String toString() {
-        return code + " – " + description;
+        return code + " Ã¢â‚¬â€œ " + description;
     }
 }

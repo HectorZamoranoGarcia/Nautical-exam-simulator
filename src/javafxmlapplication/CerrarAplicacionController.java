@@ -1,4 +1,4 @@
-﻿package javafxmlapplication;
+package javafxmlapplication;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;

@@ -1,4 +1,4 @@
-﻿package javafxmlapplication;
+package javafxmlapplication;
 
 import java.io.IOException;
 import java.net.URL;

@@ -1,4 +1,4 @@
-﻿package javafxmlapplication;
+package javafxmlapplication;
 
 import java.io.File;
 import java.net.URL;
@@ -100,7 +100,7 @@ public class FXMLRegistrarseController implements Initializable {
     }
 
     /**
-     * Validates the password against the strength rule: 8–15 characters,
+     * Validates the password against the strength rule: 8Ã¢â‚¬â€œ15 characters,
      * at least one letter and one digit.
      */
     private void checkPassword() {
@@ -246,7 +246,7 @@ public class FXMLRegistrarseController implements Initializable {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Abrir Fichero");
         fileChooser.getExtensionFilters().addAll(
-                new ExtensionFilter("Imágenes", "*.png", "*.jpg"),
+                new ExtensionFilter("ImÃƒÂ¡genes", "*.png", "*.jpg"),
                 new ExtensionFilter("Todos", "*.*"));
         File selectedFile = fileChooser.showOpenDialog(((Node) event.getSource()).getScene().getWindow());
 
