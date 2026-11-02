@@ -1,17 +1,20 @@
 /* Work screen styles */
 
 /* Main background */
+
 .root {
     -fx-background-color: #f5f9ff;
 }
 
 /* Containers */
+
 .dialog-pane, .pane, .anchor-pane, .border-pane, .grid-pane, .vbox, .hbox {
     -fx-background-color: #ffffff;
     -fx-border-color: transparent;
 }
 
 /* Headings */
+
 .label-header {
     -fx-font-weight: bold;
     -fx-text-fill: #0d47a1;
@@ -19,6 +22,7 @@
 }
 
 /* Chart text */
+
 .text {
     -fx-fill: #0d47a1;
 }
@@ -26,6 +30,7 @@
 /* Buttons */
 
 /* Default button */
+
 .button {
     -fx-background-color: linear-gradient(to bottom, #e3f2fd, #bbdefb);
     -fx-text-fill: #0d47a1;
@@ -39,6 +44,7 @@
 }
 
 /* Primary button */
+
 .button.primary {
     -fx-background-color: linear-gradient(to bottom, #64b5f6, #42a5f5);
     -fx-text-fill: white;
@@ -46,6 +52,7 @@
 }
 
 /* Secondary button */
+
 .button.secondary {
     -fx-background-color: linear-gradient(to bottom, #90caf9, #64b5f6);
     -fx-text-fill: white;
@@ -53,6 +60,7 @@
 }
 
 /* Random problem button */
+
 .button-random {
     -fx-background-color: linear-gradient(to bottom, #64b5f6, #42a5f5);
     -fx-text-fill: white;
@@ -60,6 +68,7 @@
 }
 
 /* Dark button hover */
+
 .button.primary:hover,
 .button.secondary:hover,
 .button-random:hover {
@@ -67,6 +76,7 @@
 }
 
 /* Dark button pressed state */
+
 .button.primary:pressed,
 .button.secondary:pressed,
 .button-random:pressed {
@@ -75,6 +85,7 @@
 }
 
 /* Light button states */
+
 .button:hover {
     -fx-background-color: linear-gradient(to bottom, #bbdefb, #90caf9);
 }
@@ -87,6 +98,7 @@
 /* Text fields */
 
 /* Text and password fields */
+
 .text-field, .password-field {
     -fx-background-color: #ffffff;
     -fx-border-color: #90caf9;
@@ -98,12 +110,14 @@
 }
 
 /* Focus state */
+
 .text-field:focused, .password-field:focused {
     -fx-border-color: #2196F3;
     -fx-effect: dropshadow(two-pass-box, rgba(33,150,243,0.3), 3, 0, 0, 1);
 }
 
 /* TextArea */
+
 .text-area {
     -fx-background-color: #ffffff;
     -fx-border-color: #90caf9;
@@ -116,17 +130,20 @@
 /* Labels */
 
 /* Default label */
+
 .label {
     -fx-text-fill: #0d47a1;
 }
 
 /* Error label */
+
 .label-error {
     -fx-text-fill: #d32f2f;
     -fx-padding: 2 0 0 0;
 }
 
 /* Secondary label */
+
 .label-info {
     -fx-text-fill: #546e7a;
 }
@@ -134,17 +151,20 @@
 /* Menus */
 
 /* Main menu bar */
+
 .menu-bar {
     -fx-background-color: linear-gradient(to bottom, #e3f2fd, #bbdefb);
 }
 
 /* Menu text */
+
 .menu-bar .label {
     -fx-text-fill: #1976D2;
     -fx-font-weight: bold;
 }
 
 /* Menu button */
+
 .menu-button {
     -fx-background-color: linear-gradient(to bottom, #ffffff, #e3f2fd);
     -fx-border-color: #90caf9;
@@ -154,12 +174,14 @@
 }
 
 /* Menu button arrow */
+
 .menu-button .arrow {
     -fx-background-color: #1976D2;
     -fx-background-radius: 2;
 }
 
 /* Menu item */
+
 .menu-item {
     -fx-background-color: #e3f2fd;
     -fx-text-fill: #1976D2;
@@ -167,6 +189,7 @@
 }
 
 /* Menu item hover */
+
 .menu-item:hover {
     -fx-background-color: #bbdefb;
 }
@@ -174,6 +197,7 @@
 /* Radio buttons and checkboxes */
 
 /* Radio button text */
+
 .radio-button {
     -fx-text-fill: #1976D2;
 }
@@ -183,6 +207,7 @@
 }
 
 /* Checkbox mark */
+
 .check-box .box {
     -fx-mark-color: #1976D2;
 }
@@ -190,6 +215,7 @@
 /* Separators */
 
 /* Separator line */
+
 .separator {
     -fx-background-color: #90CAF9;
     -fx-background-insets: 0;
@@ -199,6 +225,7 @@
 /* Tooltips */
 
 /* Tooltip panel */
+
 .tooltip {
     -fx-background-color: #e3f2fd;
     -fx-text-fill: #0d47a1;
@@ -251,6 +278,7 @@
 }
 
 /* Slider track and thumb */
+
 .slider .track {
     -fx-background-color: #90caf9;
     -fx-background-radius: 3;
@@ -263,6 +291,7 @@
 }
 
 /* Slider labels */
+
 .slider .labels .tick-label {
     -fx-fill: #0d47a1;
 }
@@ -318,12 +347,14 @@
 }
 
 /* Slider tick labels */
+
 .slider .labels .tick-label,
 .slider .axis .tick-label {
     -fx-fill: #0d47a1;
 }
 
 /* Slider tick marks */
+
 .slider .axis .tick-mark {
     -fx-stroke: #0d47a1;
 }
