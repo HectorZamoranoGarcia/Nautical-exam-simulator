@@ -22,11 +22,7 @@ import model.Problem;
 import model.User;
 import model.sub.SqliteConnection;
 
-/**
- * Controller for the problem selection screen.
- * Allows the user to pick a problem from the list by double-clicking,
- * or to choose one at random via the random-mode button.
- */
+/** Problem selection controller */
 public class ElegirProblemaController implements Initializable {
 
     @FXML
@@ -48,16 +44,6 @@ public class ElegirProblemaController implements Initializable {
     private int selectionIndex;
     private boolean problemSelected;
 
-    /**
-     * Populates user context needed to re-authenticate and load the problem list.
-     *
-     * @param user     the authenticated user object
-     * @param nick     the user's nickname (used for re-authentication)
-     * @param email    the user's email address
-     * @param pass     the user's password (used for re-authentication)
-     * @param avatar   the user's avatar image
-     * @param birthday the user's date of birth
-     */
     public void initUser(User user, String nick, String email, String pass,
             javafx.scene.image.Image avatar, java.time.LocalDate birthday) {
         this.user = user;
@@ -65,30 +51,16 @@ public class ElegirProblemaController implements Initializable {
         this.pass = pass;
     }
 
-    /**
-     * Provides the accumulated hit/fault counters from the current session.
-     *
-     * @param hits   problems answered correctly so far
-     * @param faults problems answered incorrectly so far
-     */
     public void initSession(int hits, int faults) {
-        // Counters are carried over to the parent controller on return.
+
+        // Keep session totals when returning
+
     }
 
-    /**
-     * Returns whether the user has double-clicked to confirm a problem selection.
-     *
-     * @return {@code true} if a problem was selected, {@code false} otherwise
-     */
     public boolean isProblemSelected() {
         return problemSelected;
     }
 
-    /**
-     * Returns the problem chosen by the user, or {@code null} if none was selected.
-     *
-     * @return the selected {@link Problem}
-     */
     public Problem getProblem() {
         return selectedProblem;
     }
@@ -127,7 +99,6 @@ public class ElegirProblemaController implements Initializable {
         });
     }
 
-    /** Selects a random problem from the available list and closes the window. */
     @FXML
     private void botonModoAleatorioOnAction(ActionEvent event) {
         if (problemList != null && !problemList.isEmpty()) {

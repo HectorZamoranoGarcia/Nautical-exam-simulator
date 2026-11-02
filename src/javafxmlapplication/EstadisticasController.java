@@ -19,10 +19,7 @@ import model.sub.SqliteConnection;
 
 import java.time.LocalDate;
 
-/**
- * Controller for the statistics overview screen.
- * Displays aggregate hit/fault totals and their percentages.
- */
+/** Statistics screen controller */
 public class EstadisticasController implements Initializable {
 
     @FXML
@@ -46,26 +43,11 @@ public class EstadisticasController implements Initializable {
     private String nick;
     private String pass;
 
-    /**
-     * Populates the user context required for the statistics query.
-     *
-     * @param nick     the user's nickname
-     * @param email    the user's email address
-     * @param pass     the user's password
-     * @param avatar   the user's avatar image
-     * @param birthday the user's date of birth
-     */
     public void initUser(String nick, String email, String pass, Image avatar, LocalDate birthday) {
         this.nick = nick;
         this.pass = pass;
     }
 
-    /**
-     * Calculates and displays aggregate statistics from the raw hit/fault counts.
-     *
-     * @param totalHits   total number of correctly answered questions across all sessions
-     * @param totalFaults total number of incorrectly answered questions across all sessions
-     */
     public void initEstadisticas(int totalHits, int totalFaults) {
         double numProblemas = totalHits + totalFaults;
         double porcentajeAciertos = ((totalHits / numProblemas) * 100);

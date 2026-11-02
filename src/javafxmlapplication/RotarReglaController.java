@@ -8,11 +8,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-/**
- * Controller for the "Rotate Ruler" tool window.
- * Exposes a slider that rotates the ruler overlay on the navigation chart.
- * The title bar is draggable since this window has no OS decoration.
- */
+/** Ruler rotation controller */
 public class RotarReglaController {
 
     @FXML
@@ -22,27 +18,20 @@ public class RotarReglaController {
     @FXML
     private Text titleText;
 
-    /**
-     * X/Y offsets used to compute window position while the title bar is dragged.
-     */
     private double xOffset = 0;
     private double yOffset = 0;
 
     private ImageView ruleImageView;
 
-    /**
-     * Injects the ruler {@link ImageView} from the main chart pane so that
-     * slider changes are applied directly to the correct overlay node.
-     *
-     * @param ruleImageView the ImageView representing the ruler on the chart
-     */
     public void setRuleImageView(ImageView ruleImageView) {
         this.ruleImageView = ruleImageView;
     }
 
     @FXML
     public void initialize() {
-        // Allow dragging the undecorated window by its title bar.
+
+        // Drag the window by its title bar
+
         titleText.setOnMousePressed(event -> {
             Stage stage = (Stage) titleText.getScene().getWindow();
             xOffset = stage.getX() - event.getScreenX();
@@ -61,7 +50,7 @@ public class RotarReglaController {
 
         rotationSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             double rotationDegrees = newValue.doubleValue();
-            rotationLabel.setText(String.format("%.2fÃ‚Â°", rotationDegrees));
+            rotationLabel.setText(String.format("%.2f°", rotationDegrees));
             ruleImageView.setRotate(rotationDegrees);
         });
     }

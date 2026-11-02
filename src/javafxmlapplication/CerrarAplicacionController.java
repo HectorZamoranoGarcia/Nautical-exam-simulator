@@ -11,10 +11,7 @@ import javafx.stage.Stage;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-/**
- * Controller for the "Close Application" confirmation dialog.
- * Exits the JVM on accept, or dismisses the dialog on cancel.
- */
+/** Application exit dialog controller */
 public class CerrarAplicacionController implements Initializable {
 
     @FXML
@@ -24,7 +21,6 @@ public class CerrarAplicacionController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Nothing to initialize.
     }
 
     @FXML

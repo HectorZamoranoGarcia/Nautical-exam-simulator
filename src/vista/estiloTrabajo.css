@@ -1,36 +1,34 @@
-/* application.css */
+/* Work screen styles */
 
-/* Fondo global */
+/* Main background */
 .root {
     -fx-background-color: #f5f9ff;
 }
 
-/* Contenedores */
+/* Containers */
 .dialog-pane, .pane, .anchor-pane, .border-pane, .grid-pane, .vbox, .hbox {
     -fx-background-color: #ffffff;
     -fx-border-color: transparent;
 }
 
-/* Encabezados grandes */
+/* Headings */
 .label-header {
     -fx-font-weight: bold;
     -fx-text-fill: #0d47a1;
     -fx-padding: 0 0 10 0;
 }
 
-/* Nodo Text (sin cambiar tamaño) */
+/* Chart text */
 .text {
     -fx-fill: #0d47a1;
 }
 
-/* ====================================
-   BOTONES
-   ==================================== */
+/* Buttons */
 
-/* Botones genéricos (fondo claro, texto azul) */
+/* Default button */
 .button {
     -fx-background-color: linear-gradient(to bottom, #e3f2fd, #bbdefb);
-    -fx-text-fill: #0d47a1;       /* texto azul en botones de fondo claro */
+    -fx-text-fill: #0d47a1;
     -fx-font-weight: bold;
     -fx-background-radius: 4;
     -fx-border-radius: 4;
@@ -40,35 +38,35 @@
     -fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.1), 2, 0, 0, 1);
 }
 
-/* Botones primarios (fondo azul claro, texto siempre blanco) */
+/* Primary button */
 .button.primary {
     -fx-background-color: linear-gradient(to bottom, #64b5f6, #42a5f5);
     -fx-text-fill: white;
     -fx-border-color: #1e88e5;
 }
 
-/* Botones secundarios (fondo azul medio, texto siempre blanco) */
+/* Secondary button */
 .button.secondary {
     -fx-background-color: linear-gradient(to bottom, #90caf9, #64b5f6);
     -fx-text-fill: white;
     -fx-border-color: #42a5f5;
 }
 
-/* Botón “aleatorio” (fondo diferente, texto siempre blanco) */
+/* Random problem button */
 .button-random {
     -fx-background-color: linear-gradient(to bottom, #64b5f6, #42a5f5);
     -fx-text-fill: white;
     -fx-border-color: #1e88e5;
 }
 
-/* Hover para botones oscuros (que mantienen texto blanco) */
+/* Dark button hover */
 .button.primary:hover,
 .button.secondary:hover,
 .button-random:hover {
     -fx-background-color: linear-gradient(to bottom, #42a5f5, #2196f3);
 }
 
-/* Presionado para botones oscuros (texto blanco) */
+/* Dark button pressed state */
 .button.primary:pressed,
 .button.secondary:pressed,
 .button-random:pressed {
@@ -76,7 +74,7 @@
     -fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.2), 1, 0, 0, 1);
 }
 
-/* Hover/Pressed para botones claros (texto azul) */
+/* Light button states */
 .button:hover {
     -fx-background-color: linear-gradient(to bottom, #bbdefb, #90caf9);
 }
@@ -86,11 +84,9 @@
     -fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.2), 1, 0, 0, 1);
 }
 
-/* ====================================
-   CAMPOS DE TEXTO Y TEXTAREA
-   ==================================== */
+/* Text fields */
 
-/* TextField y PasswordField */
+/* Text and password fields */
 .text-field, .password-field {
     -fx-background-color: #ffffff;
     -fx-border-color: #90caf9;
@@ -101,13 +97,11 @@
     -fx-text-fill: #0d47a1;
 }
 
-/* Focus en TextField y PasswordField */
+/* Focus state */
 .text-field:focused, .password-field:focused {
     -fx-border-color: #2196F3;
     -fx-effect: dropshadow(two-pass-box, rgba(33,150,243,0.3), 3, 0, 0, 1);
 }
-
-/* DatePicker usa estilo por defecto */
 
 /* TextArea */
 .text-area {
@@ -119,42 +113,38 @@
     -fx-text-fill: #0d47a1;
 }
 
-/* ====================================
-   LABELS
-   ==================================== */
+/* Labels */
 
-/* Label genérico */
+/* Default label */
 .label {
     -fx-text-fill: #0d47a1;
 }
 
-/* Label de error */
+/* Error label */
 .label-error {
     -fx-text-fill: #d32f2f;
     -fx-padding: 2 0 0 0;
 }
 
-/* Label de información secundaria */
+/* Secondary label */
 .label-info {
     -fx-text-fill: #546e7a;
 }
 
-/* ====================================
-   MENÚS
-   ==================================== */
+/* Menus */
 
-/* Menú principal (barra): azul muy claro */
+/* Main menu bar */
 .menu-bar {
     -fx-background-color: linear-gradient(to bottom, #e3f2fd, #bbdefb);
 }
 
-/* Texto en la barra de menú: azul intenso */
+/* Menu text */
 .menu-bar .label {
     -fx-text-fill: #1976D2;
     -fx-font-weight: bold;
 }
 
-/* MenuButton (botón desplegable): fondo claro, texto azul */
+/* Menu button */
 .menu-button {
     -fx-background-color: linear-gradient(to bottom, #ffffff, #e3f2fd);
     -fx-border-color: #90caf9;
@@ -163,29 +153,27 @@
     -fx-text-fill: #1976D2;
 }
 
-/* Flecha del MenuButton */
+/* Menu button arrow */
 .menu-button .arrow {
     -fx-background-color: #1976D2;
     -fx-background-radius: 2;
 }
 
-/* MenuItem: fondo azul claro, texto azul medio */
+/* Menu item */
 .menu-item {
     -fx-background-color: #e3f2fd;
     -fx-text-fill: #1976D2;
     -fx-padding: 5 10 5 10;
 }
 
-/* Hover de MenuItem: fondo un poco más oscuro */
+/* Menu item hover */
 .menu-item:hover {
     -fx-background-color: #bbdefb;
 }
 
-/* ====================================
-   RADIOBUTTON / CHECKBOX
-   ==================================== */
+/* Radio buttons and checkboxes */
 
-/* RadioButton: texto azul */
+/* Radio button text */
 .radio-button {
     -fx-text-fill: #1976D2;
 }
@@ -194,27 +182,23 @@
     -fx-mark-color: #1976D2;
 }
 
-/* Checkbox: marca azul para consistencia */
+/* Checkbox mark */
 .check-box .box {
     -fx-mark-color: #1976D2;
 }
 
-/* ====================================
-   SEPARATOR
-   ==================================== */
+/* Separators */
 
-/* Línea separadora: azul tenue */
+/* Separator line */
 .separator {
     -fx-background-color: #90CAF9;
     -fx-background-insets: 0;
     -fx-padding: 2 0 2 0;
 }
 
-/* ====================================
-   TOOLTIP
-   ==================================== */
+/* Tooltips */
 
-/* Fondo celeste muy claro, texto azul oscuro */
+/* Tooltip panel */
 .tooltip {
     -fx-background-color: #e3f2fd;
     -fx-text-fill: #0d47a1;
@@ -223,9 +207,7 @@
     -fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.1), 2, 0, 0, 1);
 }
 
-/* ====================================
-   TABLEVIEW
-   ==================================== */
+/* Tables */
 
 .table-view {
     -fx-background-color: #ffffff;
@@ -249,9 +231,7 @@
     -fx-background-color: #bbdefb;
 }
 
-/* ====================================
-   GRIDPANE
-   ==================================== */
+/* Grid panes */
 
 .grid-pane {
     -fx-hgap: 10;
@@ -264,15 +244,13 @@
     -fx-grid-lines-cell-border-color: #e3f2fd;
 }
 
-/* ====================================
-   SLIDER
-   ==================================== */
+/* Sliders */
 
 .slider {
     -fx-control-inner-background: #ffffff;
 }
 
-/* Track y thumb */
+/* Slider track and thumb */
 .slider .track {
     -fx-background-color: #90caf9;
     -fx-background-radius: 3;
@@ -284,14 +262,12 @@
     -fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.2), 2, 0, 0, 1);
 }
 
-/* Etiquetas numéricas debajo del slider en azul */
+/* Slider labels */
 .slider .labels .tick-label {
     -fx-fill: #0d47a1;
 }
 
-/* ====================================
-   SCROLLPANE / SCROLLBAR
-   ==================================== */
+/* Scroll panes and bars */
 
 .scroll-pane {
     -fx-background: #ffffff;
@@ -307,9 +283,7 @@
     -fx-background-radius: 4;
 }
 
-/* ====================================
-   DIÁLOGOS (Alert, DialogPane)
-   ==================================== */
+/* Dialogs */
 
 .dialog-pane {
     -fx-background-color: #ffffff;
@@ -337,21 +311,19 @@
     -fx-border-color: #90caf9;
 }
 
-/* ====================================
-   IMAGEVIEW
-   ==================================== */
+/* Images */
 
 .image-view {
     -fx-effect: dropshadow(two-pass-box, rgba(0,0,0,0.1), 2, 0, 0, 1);
 }
 
-/* Números azules debajo del slider */
+/* Slider tick labels */
 .slider .labels .tick-label,
 .slider .axis .tick-label {
     -fx-fill: #0d47a1;
 }
 
-/* Rayitas azules */
+/* Slider tick marks */
 .slider .axis .tick-mark {
     -fx-stroke: #0d47a1;
 }

@@ -31,11 +31,7 @@ import model.Navigation;
 import model.User;
 import model.sub.SqliteConnection;
 
-/**
- * Controller for the user registration window.
- * Validates all fields in real-time and enables the accept button
- * only when all inputs pass their validation rules.
- */
+/** Registration screen controller */
 public class FXMLRegistrarseController implements Initializable {
 
     @FXML
@@ -75,10 +71,6 @@ public class FXMLRegistrarseController implements Initializable {
 
     private Image avatar;
 
-    /**
-     * Checks whether the entered username is unique in the database.
-     * Highlights the field and shows an error label if the name already exists.
-     */
     private void checkUser() throws NavDAOException {
         String user = usuarioField.getText();
         Navigation nav = Navigation.getInstance();
@@ -87,10 +79,6 @@ public class FXMLRegistrarseController implements Initializable {
         showError(!isValid, usuarioField, usuarioError);
     }
 
-    /**
-     * Validates the entered email address against the RFC-compatible regex.
-     * Highlights the field and shows an error label on failure.
-     */
     private void checkEmail() {
         String email = emailField.getText();
         boolean isValid = email.matches(
@@ -99,10 +87,6 @@ public class FXMLRegistrarseController implements Initializable {
         showError(isValid, emailField, emailError);
     }
 
-    /**
-     * Validates the password against the strength rule: 8Ã¢â‚¬â€œ15 characters,
-     * at least one letter and one digit.
-     */
     private void checkPassword() {
         String password = passwordField.getText();
         boolean isValid = password.matches("^(?=.*[0-9])(?=.*[a-zA-Z]).{8,15}$");
@@ -110,10 +94,6 @@ public class FXMLRegistrarseController implements Initializable {
         showError(isValid, passwordField, passwordError);
     }
 
-    /**
-     * Validates that the selected birthdate implies the user is at least 16 years
-     * old.
-     */
     private void checkDate() {
         LocalDate value = dateField.getValue();
         boolean isValid = value.isBefore(LocalDate.now().minus(16, YEARS));
@@ -121,14 +101,6 @@ public class FXMLRegistrarseController implements Initializable {
         showError(isValid, dateField, dateError);
     }
 
-    /**
-     * Toggles the visibility of an error label and applies a red background
-     * to the invalid field.
-     *
-     * @param isValid      {@code true} if the field contains a valid value
-     * @param field        the input control to style
-     * @param errorMessage the label to show or hide
-     */
     private void showError(boolean isValid, Node field, Node errorMessage) {
         errorMessage.setVisible(!isValid);
         field.setStyle(isValid ? "" : "-fx-background-color: #FCE5E0");
@@ -140,7 +112,9 @@ public class FXMLRegistrarseController implements Initializable {
             SqliteConnection sqlite = new SqliteConnection();
             sqlite.connectSqlite("data.db");
         } catch (SQLException ex) {
-            // Database file not found; application cannot proceed without it.
+
+            // Stop if the database is missing
+
         }
 
         validUser = new SimpleBooleanProperty(false);
@@ -246,7 +220,7 @@ public class FXMLRegistrarseController implements Initializable {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Abrir Fichero");
         fileChooser.getExtensionFilters().addAll(
-                new ExtensionFilter("ImÃƒÂ¡genes", "*.png", "*.jpg"),
+                new ExtensionFilter("Imágenes", "*.png", "*.jpg"),
                 new ExtensionFilter("Todos", "*.*"));
         File selectedFile = fileChooser.showOpenDialog(((Node) event.getSource()).getScene().getWindow());
 

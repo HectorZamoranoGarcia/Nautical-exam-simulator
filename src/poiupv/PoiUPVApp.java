@@ -7,11 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
-/**
- * JavaFX application entry point for the Nautical Exam Simulator.
- * Loads the authentication window on first launch and exposes a static
- * method to re-open that window without restarting the JVM.
- */
+/** JavaFX application entry point */
 public class PoiUPVApp extends Application {
 
     private static Stage primaryStage;
@@ -33,12 +29,6 @@ public class PoiUPVApp extends Application {
         primaryStage.show();
     }
 
-    /**
-     * Creates a new top-level window and re-launches the authentication screen.
-     * Used to return to login after a session ends without restarting the JVM.
-     *
-     * @throws Exception if the FXML file cannot be loaded
-     */
     public static void reiniciarApp() throws Exception {
         Stage newStage = new Stage();
         instance.start(newStage);

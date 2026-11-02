@@ -24,10 +24,7 @@ import model.Navigation;
 import model.User;
 import model.sub.SqliteConnection;
 
-/**
- * Controller for the user profile edit dialog.
- * Allows the user to update their password, email, avatar, and birthdate.
- */
+/** Profile editor controller */
 public class PerfilPanelController implements Initializable {
 
     @FXML
@@ -47,29 +44,11 @@ public class PerfilPanelController implements Initializable {
     private User user;
     private Navigation nav;
 
-    /**
-     * Stores the user credentials needed to re-authenticate before saving changes.
-     *
-     * @param nick     the user's current nickname
-     * @param email    the user's current email address
-     * @param pass     the user's current password
-     * @param avatar   the user's current avatar image
-     * @param birthday the user's date of birth
-     */
     public void initUser(String nick, String email, String pass, Image avatar, LocalDate birthday) {
         this.nick = nick;
         this.pass = pass;
     }
 
-    /**
-     * Pre-fills the dialog fields with the current user data.
-     *
-     * @param nick     the user's current nickname
-     * @param email    the user's current email address
-     * @param pass     the user's current password
-     * @param avatar   the user's current avatar image
-     * @param birthday the user's date of birth
-     */
     public void populateFields(String nick, String email, String pass, Image avatar, LocalDate birthday) {
         tfUsuario.setText(nick);
         pfContrasena.setText(pass);
@@ -78,20 +57,10 @@ public class PerfilPanelController implements Initializable {
         dpFechaNacimiento.setValue(birthday);
     }
 
-    /**
-     * Returns whether the user confirmed saving the profile changes.
-     *
-     * @return {@code true} if the save button was pressed successfully
-     */
     public boolean isSaveConfirmed() {
         return saveConfirmed;
     }
 
-    /**
-     * Returns the updated user object after a successful save.
-     *
-     * @return the updated {@link User}
-     */
     public User getUser() {
         return user;
     }
@@ -115,13 +84,12 @@ public class PerfilPanelController implements Initializable {
         }
     }
 
-    /** Opens a file chooser so the user can pick a new avatar image. */
     @FXML
     void onChooseAvatar() {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Selecciona un avatar");
         chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("ImÃƒÂ¡genes", "*.png", "*.jpg", "*.jpeg"));
+                new FileChooser.ExtensionFilter("Imágenes", "*.png", "*.jpg", "*.jpeg"));
         Window win = ivDialogIcon.getScene().getWindow();
         java.io.File file = chooser.showOpenDialog(win);
         if (file != null) {
@@ -129,12 +97,11 @@ public class PerfilPanelController implements Initializable {
         }
     }
 
-    /** Validates and persists all profile changes, then closes the dialog. */
     @FXML
     void onGuardar() throws NavDAOException {
         user = nav.authenticate(nick, pass);
         if (pfContrasena.getText().length() < 8) {
-            showError("La contraseÃƒÂ±a debe tener al menos 8 caracteres.");
+            showError("La contraseña debe tener al menos 8 caracteres.");
             return;
         } else {
             user.setPassword(pfContrasena.getText());
@@ -144,10 +111,9 @@ public class PerfilPanelController implements Initializable {
             saveConfirmed = true;
         }
         ivDialogIcon.getScene().getWindow().hide();
-        showInfo("Cambios guardados, para su visualizaciÃƒÂ³n debe reiniciar el programa.");
+        showInfo("Cambios guardados. Reinicia el programa para verlos.");
     }
 
-    /** Discards any changes and closes the dialog. */
     @FXML
     void onCancelar() {
         ivDialogIcon.getScene().getWindow().hide();

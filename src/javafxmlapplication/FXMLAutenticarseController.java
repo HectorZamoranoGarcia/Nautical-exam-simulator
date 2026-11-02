@@ -23,10 +23,7 @@ import model.Navigation;
 import model.User;
 import model.sub.SqliteConnection;
 
-/**
- * Controller for the login (authentication) window.
- * Validates credentials and opens the main work screen on success.
- */
+/** Sign-in screen controller */
 public class FXMLAutenticarseController implements Initializable {
 
     @FXML
@@ -55,17 +52,17 @@ public class FXMLAutenticarseController implements Initializable {
             try {
                 Navigation.getInstance();
             } catch (NavDAOException ex) {
-                // Navigation singleton not yet ready; will be retried on login action.
+
+                // Retry navigation after login
+
             }
         } catch (SQLException ex) {
-            // Database file not found; application cannot proceed without it.
+
+            // Stop if the database is missing
+
         }
     }
 
-    /**
-     * Authenticates the user with the entered credentials and opens the main screen.
-     * Shows nothing if the nickname does not exist or credentials are incorrect.
-     */
     @FXML
     private void handleBAcceptOnAction(ActionEvent event) throws IOException, NavDAOException {
         String nick = usuarioField.getText();

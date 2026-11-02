@@ -19,10 +19,7 @@ import model.Navigation;
 import model.User;
 import model.sub.SqliteConnection;
 
-/**
- * Controller for the "Close Session" confirmation dialog.
- * Persists the current session statistics on accept, or returns to the app on cancel.
- */
+/** Session close dialog controller */
 public class CerrarSesionController implements Initializable {
 
     @FXML
@@ -35,22 +32,11 @@ public class CerrarSesionController implements Initializable {
     private User user;
     private Navigation nav;
 
-    /**
-     * Populates the user context for this dialog.
-     *
-     * @param user the authenticated user whose session will be persisted
-     */
     public void initUser(User user, String nick, String email, String pass,
                          javafx.scene.image.Image avatar, java.time.LocalDate birthday) {
         this.user = user;
     }
 
-    /**
-     * Sets the hit/fault counters accumulated during the current work session.
-     *
-     * @param hits   number of correctly answered problems
-     * @param faults number of incorrectly answered problems
-     */
     public void initSesion(int hits, int faults) {
         this.hits = hits;
         this.faults = faults;
